@@ -3,9 +3,11 @@ import MaintenanceCard from "@/components/MaintenanceCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Plus, Search } from "lucide-react";
 
 const Maintenance = () => {
+  const { t } = useLanguage();
   const requests = [
     {
       id: "1",
@@ -71,14 +73,14 @@ const Maintenance = () => {
       <main className="container py-8 space-y-8">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-4xl font-bold tracking-tight">Maintenance</h1>
+            <h1 className="text-4xl font-bold tracking-tight">{t("maintenance.title")}</h1>
             <p className="text-muted-foreground mt-2">
-              Track and manage maintenance requests
+              {t("maintenance.subtitle")}
             </p>
           </div>
           <Button className="gap-2">
             <Plus className="h-4 w-4" />
-            New Request
+            {t("maintenance.newRequest")}
           </Button>
         </div>
 
@@ -86,7 +88,7 @@ const Maintenance = () => {
           <div className="relative flex-1 max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search maintenance requests..."
+              placeholder={t("maintenance.search")}
               className="pl-9"
             />
           </div>
@@ -94,10 +96,10 @@ const Maintenance = () => {
 
         <Tabs defaultValue="all" className="space-y-6">
           <TabsList>
-            <TabsTrigger value="all">All Requests</TabsTrigger>
-            <TabsTrigger value="pending">Pending</TabsTrigger>
-            <TabsTrigger value="in-progress">In Progress</TabsTrigger>
-            <TabsTrigger value="completed">Completed</TabsTrigger>
+            <TabsTrigger value="all">{t("maintenance.allRequests")}</TabsTrigger>
+            <TabsTrigger value="pending">{t("maintenance.pending")}</TabsTrigger>
+            <TabsTrigger value="in-progress">{t("maintenance.inProgress")}</TabsTrigger>
+            <TabsTrigger value="completed">{t("maintenance.completed")}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="all" className="space-y-4">

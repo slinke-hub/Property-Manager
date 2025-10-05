@@ -1,6 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Phone, Mail, Star } from "lucide-react";
 
 interface ServiceCardProps {
@@ -22,6 +23,8 @@ const ServiceCard = ({
   specialties,
   available,
 }: ServiceCardProps) => {
+  const { t } = useLanguage();
+  
   return (
     <Card className="transition-all hover:shadow-md">
       <CardHeader>
@@ -31,7 +34,7 @@ const ServiceCard = ({
             <CardDescription>{category}</CardDescription>
           </div>
           <Badge variant={available ? "default" : "secondary"}>
-            {available ? "Available" : "Busy"}
+            {available ? t("services.available") : t("services.busy")}
           </Badge>
         </div>
       </CardHeader>
@@ -55,7 +58,7 @@ const ServiceCard = ({
         </div>
 
         <div className="space-y-2">
-          <p className="text-xs font-medium text-muted-foreground">Specialties</p>
+          <p className="text-xs font-medium text-muted-foreground">{t("services.specialties")}</p>
           <div className="flex flex-wrap gap-2">
             {specialties.map((specialty) => (
               <Badge key={specialty} variant="outline" className="text-xs">
@@ -65,7 +68,7 @@ const ServiceCard = ({
           </div>
         </div>
 
-        <Button className="w-full" size="sm">Schedule Service</Button>
+        <Button className="w-full" size="sm">{t("services.scheduleService")}</Button>
       </CardContent>
     </Card>
   );

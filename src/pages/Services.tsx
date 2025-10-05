@@ -2,9 +2,11 @@ import Navigation from "@/components/Navigation";
 import ServiceCard from "@/components/ServiceCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Plus, Search } from "lucide-react";
 
 const Services = () => {
+  const { t } = useLanguage();
   const services = [
     {
       id: "1",
@@ -75,14 +77,14 @@ const Services = () => {
       <main className="container py-8 space-y-8">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-4xl font-bold tracking-tight">Service Providers</h1>
+            <h1 className="text-4xl font-bold tracking-tight">{t("services.title")}</h1>
             <p className="text-muted-foreground mt-2">
-              Manage your trusted service partners
+              {t("services.subtitle")}
             </p>
           </div>
           <Button className="gap-2">
             <Plus className="h-4 w-4" />
-            Add Provider
+            {t("services.addProvider")}
           </Button>
         </div>
 
@@ -90,7 +92,7 @@ const Services = () => {
           <div className="relative flex-1 max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search service providers..."
+              placeholder={t("services.search")}
               className="pl-9"
             />
           </div>

@@ -1,6 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { AlertCircle, CheckCircle, Clock, MapPin } from "lucide-react";
 
 interface MaintenanceCardProps {
@@ -23,6 +24,8 @@ const MaintenanceCard = ({
   createdAt,
   description,
 }: MaintenanceCardProps) => {
+  const { t } = useLanguage();
+  
   const priorityConfig = {
     low: { color: "bg-blue-500/10 text-blue-700 border-blue-200", icon: Clock },
     medium: { color: "bg-yellow-500/10 text-yellow-700 border-yellow-200", icon: Clock },
@@ -47,17 +50,17 @@ const MaintenanceCard = ({
             <CardTitle className="text-lg">{title}</CardTitle>
             <CardDescription className="flex items-center gap-1 text-sm">
               <MapPin className="h-3 w-3" />
-              {property} - Unit {unit}
+              {property} - {t("maintenance.unit")} {unit}
             </CardDescription>
           </div>
           <div className="flex gap-2">
             <Badge className={priorityConfig[priority].color} variant="outline">
               <PriorityIcon className="h-3 w-3 mr-1" />
-              {priority}
+              {t(`maintenance.priority.${priority}`)}
             </Badge>
             <Badge className={statusConfig[status].color} variant="outline">
               <StatusIcon className="h-3 w-3 mr-1" />
-              {status}
+              {t(`maintenance.status.${status}`)}
             </Badge>
           </div>
         </div>
@@ -67,8 +70,8 @@ const MaintenanceCard = ({
         <p className="text-sm text-muted-foreground">{description}</p>
         
         <div className="flex items-center justify-between pt-2 border-t border-border">
-          <span className="text-xs text-muted-foreground">Created {createdAt}</span>
-          <Button size="sm" variant="outline">View Details</Button>
+          <span className="text-xs text-muted-foreground">{t("maintenance.created")} {createdAt}</span>
+          <Button size="sm" variant="outline">{t("maintenance.viewDetails")}</Button>
         </div>
       </CardContent>
     </Card>

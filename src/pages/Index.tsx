@@ -3,14 +3,17 @@ import Navigation from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Building2, Wrench, TrendingUp, Users, ArrowRight } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 import heroImage from "@/assets/hero-property.jpg";
 
 const Index = () => {
+  const { t } = useLanguage();
+  
   const stats = [
-    { label: "Total Properties", value: "6", icon: Building2, trend: "+2 this month" },
-    { label: "Active Requests", value: "12", icon: Wrench, trend: "3 urgent" },
-    { label: "Occupancy Rate", value: "91%", icon: Users, trend: "+5% from last month" },
-    { label: "Monthly Revenue", value: "$296K", icon: TrendingUp, trend: "+12% growth" },
+    { label: t("stats.totalProperties"), value: "6", icon: Building2, trend: `+2 ${t("stats.thisMonth")}` },
+    { label: t("stats.activeRequests"), value: "12", icon: Wrench, trend: `3 ${t("stats.urgent")}` },
+    { label: t("stats.occupancyRate"), value: "91%", icon: Users, trend: `+5% ${t("stats.fromLastMonth")}` },
+    { label: t("stats.monthlyRevenue"), value: "$296K", icon: TrendingUp, trend: `+12% ${t("stats.growth")}` },
   ];
 
   return (
@@ -36,31 +39,30 @@ const Index = () => {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
               </span>
-              Property Management Platform
+              {t("home.badge")}
             </div>
             
             <h1 className="text-5xl sm:text-6xl font-bold tracking-tight">
-              Manage Your Properties
+              {t("home.title")}
               <span className="block mt-2 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                With Confidence
+                {t("home.titleHighlight")}
               </span>
             </h1>
             
             <p className="text-xl text-muted-foreground max-w-2xl">
-              Streamline your real estate operations with our comprehensive property management solution. 
-              Handle maintenance, track services, and maximize occupancy—all in one place.
+              {t("home.subtitle")}
             </p>
             
             <div className="flex flex-wrap gap-4">
               <Link to="/properties">
                 <Button size="lg" className="gap-2">
-                  View Properties
+                  {t("home.viewProperties")}
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
               <Link to="/maintenance">
                 <Button size="lg" variant="outline" className="gap-2">
-                  Maintenance Requests
+                  {t("home.maintenanceRequests")}
                 </Button>
               </Link>
             </div>
@@ -98,9 +100,9 @@ const Index = () => {
       <section className="container pb-24">
         <div className="space-y-8">
           <div className="text-center space-y-2">
-            <h2 className="text-3xl font-bold tracking-tight">Quick Actions</h2>
+            <h2 className="text-3xl font-bold tracking-tight">{t("home.quickActions")}</h2>
             <p className="text-muted-foreground">
-              Everything you need to manage your properties efficiently
+              {t("home.quickActionsSubtitle")}
             </p>
           </div>
 
@@ -112,10 +114,10 @@ const Index = () => {
                     <Building2 className="h-6 w-6 text-primary-foreground" />
                   </div>
                   <CardTitle className="group-hover:text-primary transition-colors">
-                    Manage Properties
+                    {t("home.manageProperties")}
                   </CardTitle>
                   <CardDescription>
-                    View and manage all your real estate properties in one place
+                    {t("home.managePropertiesDesc")}
                   </CardDescription>
                 </CardHeader>
               </Card>
@@ -128,10 +130,10 @@ const Index = () => {
                     <Wrench className="h-6 w-6 text-accent-foreground" />
                   </div>
                   <CardTitle className="group-hover:text-primary transition-colors">
-                    Track Maintenance
+                    {t("home.trackMaintenance")}
                   </CardTitle>
                   <CardDescription>
-                    Monitor and resolve maintenance requests efficiently
+                    {t("home.trackMaintenanceDesc")}
                   </CardDescription>
                 </CardHeader>
               </Card>
@@ -144,10 +146,10 @@ const Index = () => {
                     <Users className="h-6 w-6 text-primary-foreground" />
                   </div>
                   <CardTitle className="group-hover:text-primary transition-colors">
-                    Service Providers
+                    {t("home.serviceProviders")}
                   </CardTitle>
                   <CardDescription>
-                    Connect with trusted service providers for all your needs
+                    {t("home.serviceProvidersDesc")}
                   </CardDescription>
                 </CardHeader>
               </Card>

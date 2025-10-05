@@ -1,15 +1,18 @@
 import { Link, useLocation } from "react-router-dom";
 import { Building2, Wrench, Briefcase, LayoutDashboard } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/contexts/LanguageContext";
+import LanguageSwitcher from "./LanguageSwitcher";
 
 const Navigation = () => {
   const location = useLocation();
+  const { t } = useLanguage();
 
   const navItems = [
-    { to: "/", label: "Dashboard", icon: LayoutDashboard },
-    { to: "/properties", label: "Properties", icon: Building2 },
-    { to: "/maintenance", label: "Maintenance", icon: Wrench },
-    { to: "/services", label: "Services", icon: Briefcase },
+    { to: "/", label: t("nav.dashboard"), icon: LayoutDashboard },
+    { to: "/properties", label: t("nav.properties"), icon: Building2 },
+    { to: "/maintenance", label: t("nav.maintenance"), icon: Wrench },
+    { to: "/services", label: t("nav.services"), icon: Briefcase },
   ];
 
   return (
@@ -18,11 +21,12 @@ const Navigation = () => {
         <Link to="/" className="flex items-center gap-2 font-semibold text-xl">
           <Building2 className="h-6 w-6 text-primary" />
           <span className="bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent">
-            PropManager
+            {t("nav.appName")}
           </span>
         </Link>
 
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = location.pathname === item.to;
@@ -44,6 +48,8 @@ const Navigation = () => {
               </Link>
             );
           })}
+          </div>
+          <LanguageSwitcher />
         </div>
       </nav>
     </header>
