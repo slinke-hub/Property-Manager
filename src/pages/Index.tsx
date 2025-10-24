@@ -1,8 +1,9 @@
 import { Link } from "react-router-dom";
 import Navigation from "@/components/Navigation";
+import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Building2, Wrench, TrendingUp, Users, ArrowRight } from "lucide-react";
+import { Building2, Wrench, TrendingUp, Users, ArrowRight, LogIn } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import heroImage from "@/assets/hero-property.jpg";
 
@@ -17,7 +18,7 @@ const Index = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-secondary/20">
+    <div className="min-h-screen flex flex-col bg-gradient-to-b from-background to-secondary/20">
       <Navigation />
       
       {/* Hero Section */}
@@ -63,6 +64,12 @@ const Index = () => {
               <Link to="/maintenance">
                 <Button size="lg" variant="outline" className="gap-2">
                   {t("home.maintenanceRequests")}
+                </Button>
+              </Link>
+              <Link to="/auth">
+                <Button size="lg" variant="secondary" className="gap-2">
+                  <LogIn className="h-4 w-4" />
+                  {t("auth.signIn")}
                 </Button>
               </Link>
             </div>
@@ -157,6 +164,7 @@ const Index = () => {
           </div>
         </div>
       </section>
+      <Footer />
     </div>
   );
 };

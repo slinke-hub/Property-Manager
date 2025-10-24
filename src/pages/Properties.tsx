@@ -1,4 +1,5 @@
 import Navigation from "@/components/Navigation";
+import Footer from "@/components/Footer";
 import PropertyCard from "@/components/PropertyCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -65,10 +66,10 @@ const Properties = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-secondary/20">
+    <div className="min-h-screen flex flex-col bg-gradient-to-b from-background to-secondary/20">
       <Navigation />
       
-      <main className="container py-8 space-y-8">
+      <main className="flex-1 container py-8 space-y-8">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-4xl font-bold tracking-tight">{t("properties.title")}</h1>
@@ -98,6 +99,7 @@ const Properties = () => {
           ))}
         </div>
       </main>
+      <Footer />
     </div>
   );
 };
