@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Building2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Footer from "@/components/Footer";
@@ -15,6 +16,7 @@ const Auth = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
+  const [accountType, setAccountType] = useState<string>("owner");
   const [isLoading, setIsLoading] = useState(false);
   
   const { t } = useLanguage();
@@ -42,7 +44,7 @@ const Auth = () => {
           });
           return;
         }
-        const { error } = await signUp(email, password, fullName);
+        const { error } = await signUp(email, password, fullName, accountType);
         if (error) throw error;
         toast({
           title: "Success",
@@ -85,17 +87,31 @@ const Auth = () => {
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               {isSignUp && (
-                <div className="space-y-2">
-                  <Label htmlFor="fullName">{t("auth.fullName")}</Label>
-                  <Input
-                    id="fullName"
-                    type="text"
-                    placeholder={t("auth.enterName")}
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    required
-                  />
-                </div>
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="fullName">{t("auth.fullName")}</Label>
+                    <Input
+                      id="fullName"
+                      type="text"
+                      placeholder={t("auth.enterName")}
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="accountType">{t("auth.accountType")}</Label>
+                    <Select value={accountType} onValueChange={setAccountType}>
+                      <SelectTrigger>
+                        <SelectValue placeholder={t("auth.selectAccountType")} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="owner">{t("auth.owner")}</SelectItem>
+                        <SelectItem value="property_manager">{t("auth.propertyManager")}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </>
               )}
               <div className="space-y-2">
                 <Label htmlFor="email">{t("auth.email")}</Label>

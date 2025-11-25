@@ -105,6 +105,7 @@ export const en = {
     email: "Email",
     password: "Password",
     fullName: "Full Name",
+    accountType: "Account Type",
     haveAccount: "Already have an account?",
     noAccount: "Don't have an account?",
     signOut: "Sign Out",
@@ -113,6 +114,9 @@ export const en = {
     enterEmail: "Enter your email",
     enterPassword: "Enter your password",
     enterName: "Enter your full name",
+    selectAccountType: "Select your account type",
+    owner: "Villa/Unit Owner",
+    propertyManager: "Property Manager",
   },
   portal: {
     user: {

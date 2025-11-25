@@ -105,6 +105,7 @@ export const es = {
     email: "Correo Electrónico",
     password: "Contraseña",
     fullName: "Nombre Completo",
+    accountType: "Tipo de Cuenta",
     haveAccount: "¿Ya tienes una cuenta?",
     noAccount: "¿No tienes una cuenta?",
     signOut: "Cerrar Sesión",
@@ -113,6 +114,9 @@ export const es = {
     enterEmail: "Ingresa tu correo",
     enterPassword: "Ingresa tu contraseña",
     enterName: "Ingresa tu nombre completo",
+    selectAccountType: "Selecciona tu tipo de cuenta",
+    owner: "Propietario de Villa/Unidad",
+    propertyManager: "Administrador de Propiedades",
   },
   portal: {
     user: {
