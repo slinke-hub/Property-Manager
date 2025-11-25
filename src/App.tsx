@@ -11,6 +11,7 @@ import Services from "./pages/Services";
 import Auth from "./pages/Auth";
 import UserPortal from "./pages/UserPortal";
 import AdminPortal from "./pages/AdminPortal";
+import Wallet from "./pages/Wallet";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -30,6 +31,7 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/user-portal" element={<UserPortal />} />
             <Route path="/admin-portal" element={<AdminPortal />} />
+            <Route path="/wallet" element={<Wallet />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

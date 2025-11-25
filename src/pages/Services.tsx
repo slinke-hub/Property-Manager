@@ -4,10 +4,14 @@ import ServiceCard from "@/components/ServiceCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useAuth } from "@/hooks/useAuth";
+import { useUserRole } from "@/hooks/useUserRole";
 import { Plus, Search } from "lucide-react";
 
 const Services = () => {
   const { t } = useLanguage();
+  const { user } = useAuth();
+  const { role } = useUserRole(user);
   const services = [
     {
       id: "1",
@@ -83,10 +87,12 @@ const Services = () => {
               {t("services.subtitle")}
             </p>
           </div>
-          <Button className="gap-2">
-            <Plus className="h-4 w-4" />
-            {t("services.addProvider")}
-          </Button>
+          {(role === "property_manager" || role === "admin") && (
+            <Button className="gap-2">
+              <Plus className="h-4 w-4" />
+              {t("services.addProvider")}
+            </Button>
+          )}
         </div>
 
         <div className="flex items-center gap-4">
