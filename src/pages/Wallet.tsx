@@ -23,7 +23,9 @@ const Wallet = () => {
   const [balance, setBalance] = useState<number>(0);
   const [transactions, setTransactions] = useState<any[]>([]);
   const [depositAmount, setDepositAmount] = useState("");
+  const [withdrawAmount, setWithdrawAmount] = useState("");
   const [isDepositOpen, setIsDepositOpen] = useState(false);
+  const [isWithdrawOpen, setIsWithdrawOpen] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -147,6 +149,75 @@ const Wallet = () => {
     }
   };
 
+  const handleWithdraw = async () => {
+    const amount = parseFloat(withdrawAmount);
+    if (isNaN(amount) || amount <= 0) {
+      toast({
+        title: "Invalid amount",
+        description: "Please enter a valid amount greater than 0",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (amount > balance) {
+      toast({
+        title: "Insufficient funds",
+        description: "You don't have enough balance to withdraw this amount",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      // Get current wallet
+      const { data: wallet, error: walletError } = await supabase
+        .from("wallets")
+        .select("*")
+        .eq("user_id", user!.id)
+        .single();
+
+      if (walletError) throw walletError;
+
+      // Update balance
+      const newBalance = Number(wallet.balance) - amount;
+      const { error: updateError } = await supabase
+        .from("wallets")
+        .update({ balance: newBalance })
+        .eq("id", wallet.id);
+
+      if (updateError) throw updateError;
+
+      // Create transaction record
+      const { error: transactionError } = await supabase
+        .from("wallet_transactions")
+        .insert({
+          wallet_id: wallet.id,
+          user_id: user!.id,
+          type: "debit",
+          amount: amount,
+          description: "Withdrawal",
+        });
+
+      if (transactionError) throw transactionError;
+
+      toast({
+        title: "Success",
+        description: `$${amount.toFixed(2)} has been withdrawn from your wallet`,
+      });
+
+      setWithdrawAmount("");
+      setIsWithdrawOpen(false);
+      fetchWalletData();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to withdraw funds",
+        variant: "destructive",
+      });
+    }
+  };
+
   if (authLoading || roleLoading || loading) {
     return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
   }
@@ -216,10 +287,48 @@ const Wallet = () => {
                       </DialogFooter>
                     </DialogContent>
                   </Dialog>
-                  <Button variant="outline" className="gap-2">
-                    <ArrowDownRight className="h-4 w-4" />
-                    {t("wallet.withdraw")}
-                  </Button>
+                  <Dialog open={isWithdrawOpen} onOpenChange={setIsWithdrawOpen}>
+                    <DialogTrigger asChild>
+                      <Button variant="outline" className="gap-2">
+                        <ArrowDownRight className="h-4 w-4" />
+                        {t("wallet.withdraw")}
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>{t("wallet.withdrawMoney")}</DialogTitle>
+                        <DialogDescription>
+                          {t("wallet.withdrawDescription")}
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="space-y-4 py-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="withdraw-amount">{t("wallet.amount")}</Label>
+                          <Input
+                            id="withdraw-amount"
+                            type="number"
+                            placeholder="0.00"
+                            value={withdrawAmount}
+                            onChange={(e) => setWithdrawAmount(e.target.value)}
+                            min="0"
+                            step="0.01"
+                            max={balance}
+                          />
+                          <p className="text-sm text-muted-foreground">
+                            {t("wallet.availableBalance")}: ${balance.toFixed(2)}
+                          </p>
+                        </div>
+                      </div>
+                      <DialogFooter>
+                        <Button variant="outline" onClick={() => setIsWithdrawOpen(false)}>
+                          {t("wallet.cancel")}
+                        </Button>
+                        <Button onClick={handleWithdraw}>
+                          {t("wallet.confirmWithdraw")}
+                        </Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
                 </div>
               </CardContent>
             </Card>
