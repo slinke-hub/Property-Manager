@@ -180,9 +180,13 @@ export const es = {
     transactionHistory: "Tu historial de transacciones",
     depositMoney: "Depositar Dinero",
     depositDescription: "Ingresa la cantidad que deseas agregar a tu billetera",
+    withdrawMoney: "Retirar Dinero",
+    withdrawDescription: "Ingresa la cantidad que deseas retirar de tu billetera",
     amount: "Cantidad",
     cancel: "Cancelar",
     confirmDeposit: "Confirmar Depósito",
+    confirmWithdraw: "Confirmar Retiro",
+    availableBalance: "Saldo disponible",
     noTransactions: "No hay transacciones aún",
   },
 };

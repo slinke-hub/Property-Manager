@@ -180,9 +180,13 @@ export const en = {
     transactionHistory: "Your transaction history",
     depositMoney: "Deposit Money",
     depositDescription: "Enter the amount you want to add to your wallet",
+    withdrawMoney: "Withdraw Money",
+    withdrawDescription: "Enter the amount you want to withdraw from your wallet",
     amount: "Amount",
     cancel: "Cancel",
     confirmDeposit: "Confirm Deposit",
+    confirmWithdraw: "Confirm Withdraw",
+    availableBalance: "Available balance",
     noTransactions: "No transactions yet",
   },
 };
