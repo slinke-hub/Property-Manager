@@ -12,6 +12,7 @@ import Auth from "./pages/Auth";
 import UserPortal from "./pages/UserPortal";
 import AdminPortal from "./pages/AdminPortal";
 import Wallet from "./pages/Wallet";
+import CommunityWallet from "./pages/CommunityWallet";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -32,6 +33,7 @@ const App = () => (
             <Route path="/user-portal" element={<UserPortal />} />
             <Route path="/admin-portal" element={<AdminPortal />} />
             <Route path="/wallet" element={<Wallet />} />
+            <Route path="/community-wallet" element={<CommunityWallet />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

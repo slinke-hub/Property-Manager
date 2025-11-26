@@ -14,6 +14,95 @@ export type Database = {
   }
   public: {
     Tables: {
+      community_contributions: {
+        Row: {
+          amount: number
+          created_at: string
+          description: string | null
+          id: string
+          month: number
+          user_id: string
+          year: number
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          month: number
+          user_id: string
+          year: number
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          month?: number
+          user_id?: string
+          year?: number
+        }
+        Relationships: []
+      }
+      community_transactions: {
+        Row: {
+          amount: number
+          community_wallet_id: string
+          created_at: string
+          description: string
+          id: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          community_wallet_id: string
+          created_at?: string
+          description: string
+          id?: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          community_wallet_id?: string
+          created_at?: string
+          description?: string
+          id?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_transactions_community_wallet_id_fkey"
+            columns: ["community_wallet_id"]
+            isOneToOne: false
+            referencedRelation: "community_wallet"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      community_wallet: {
+        Row: {
+          balance: number
+          created_at: string
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          balance?: number
+          created_at?: string
+          id?: string
+          updated_at?: string
+        }
+        Update: {
+          balance?: number
+          created_at?: string
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string | null
