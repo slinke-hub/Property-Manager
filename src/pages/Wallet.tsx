@@ -1,19 +1,30 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { Wallet as WalletIcon, ArrowUpRight, ArrowDownRight, CreditCard } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 const Wallet = () => {
   const { t } = useLanguage();
   const { user, loading: authLoading } = useAuth();
   const { role, loading: roleLoading } = useUserRole(user);
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const [balance, setBalance] = useState<number>(0);
+  const [transactions, setTransactions] = useState<any[]>([]);
+  const [depositAmount, setDepositAmount] = useState("");
+  const [isDepositOpen, setIsDepositOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -23,17 +34,124 @@ const Wallet = () => {
     }
   }, [user, role, authLoading, roleLoading, navigate]);
 
-  if (authLoading || roleLoading) {
+  useEffect(() => {
+    if (user && role === "owner") {
+      fetchWalletData();
+    }
+  }, [user, role]);
+
+  const fetchWalletData = async () => {
+    try {
+      setLoading(true);
+      // Fetch or create wallet
+      let { data: wallet, error: walletError } = await supabase
+        .from("wallets")
+        .select("*")
+        .eq("user_id", user!.id)
+        .single();
+
+      if (walletError && walletError.code === "PGRST116") {
+        // Wallet doesn't exist, create it
+        const { data: newWallet, error: createError } = await supabase
+          .from("wallets")
+          .insert({ user_id: user!.id, balance: 0 })
+          .select()
+          .single();
+
+        if (createError) throw createError;
+        wallet = newWallet;
+      } else if (walletError) {
+        throw walletError;
+      }
+
+      setBalance(Number(wallet.balance));
+
+      // Fetch transactions
+      const { data: transactionsData, error: transactionsError } = await supabase
+        .from("wallet_transactions")
+        .select("*")
+        .eq("user_id", user!.id)
+        .order("created_at", { ascending: false })
+        .limit(10);
+
+      if (transactionsError) throw transactionsError;
+      setTransactions(transactionsData || []);
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to fetch wallet data",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeposit = async () => {
+    const amount = parseFloat(depositAmount);
+    if (isNaN(amount) || amount <= 0) {
+      toast({
+        title: "Invalid amount",
+        description: "Please enter a valid amount greater than 0",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      // Get current wallet
+      const { data: wallet, error: walletError } = await supabase
+        .from("wallets")
+        .select("*")
+        .eq("user_id", user!.id)
+        .single();
+
+      if (walletError) throw walletError;
+
+      // Update balance
+      const newBalance = Number(wallet.balance) + amount;
+      const { error: updateError } = await supabase
+        .from("wallets")
+        .update({ balance: newBalance })
+        .eq("id", wallet.id);
+
+      if (updateError) throw updateError;
+
+      // Create transaction record
+      const { error: transactionError } = await supabase
+        .from("wallet_transactions")
+        .insert({
+          wallet_id: wallet.id,
+          user_id: user!.id,
+          type: "credit",
+          amount: amount,
+          description: "Deposit",
+        });
+
+      if (transactionError) throw transactionError;
+
+      toast({
+        title: "Success",
+        description: `$${amount.toFixed(2)} has been added to your wallet`,
+      });
+
+      setDepositAmount("");
+      setIsDepositOpen(false);
+      fetchWalletData();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to deposit funds",
+        variant: "destructive",
+      });
+    }
+  };
+
+  if (authLoading || roleLoading || loading) {
     return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
   }
 
   if (!user || role !== "owner") return null;
-
-  const transactions = [
-    { id: 1, type: "credit", amount: 500, description: "Monthly rent payment", date: "2024-01-15" },
-    { id: 2, type: "debit", amount: 150, description: "Plumbing service", date: "2024-01-10" },
-    { id: 3, type: "debit", amount: 80, description: "Cleaning service", date: "2024-01-05" },
-  ];
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-background to-secondary/20">
@@ -58,12 +176,46 @@ const Wallet = () => {
                 <CardDescription>{t("wallet.currentBalance")}</CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-5xl font-bold text-primary">$2,450.00</p>
+                <p className="text-5xl font-bold text-primary">${balance.toFixed(2)}</p>
                 <div className="flex gap-4 mt-6">
-                  <Button className="gap-2">
-                    <ArrowUpRight className="h-4 w-4" />
-                    {t("wallet.deposit")}
-                  </Button>
+                  <Dialog open={isDepositOpen} onOpenChange={setIsDepositOpen}>
+                    <DialogTrigger asChild>
+                      <Button className="gap-2">
+                        <ArrowUpRight className="h-4 w-4" />
+                        {t("wallet.deposit")}
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>{t("wallet.depositMoney")}</DialogTitle>
+                        <DialogDescription>
+                          {t("wallet.depositDescription")}
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="space-y-4 py-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="amount">{t("wallet.amount")}</Label>
+                          <Input
+                            id="amount"
+                            type="number"
+                            placeholder="0.00"
+                            value={depositAmount}
+                            onChange={(e) => setDepositAmount(e.target.value)}
+                            min="0"
+                            step="0.01"
+                          />
+                        </div>
+                      </div>
+                      <DialogFooter>
+                        <Button variant="outline" onClick={() => setIsDepositOpen(false)}>
+                          {t("wallet.cancel")}
+                        </Button>
+                        <Button onClick={handleDeposit}>
+                          {t("wallet.confirmDeposit")}
+                        </Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
                   <Button variant="outline" className="gap-2">
                     <ArrowDownRight className="h-4 w-4" />
                     {t("wallet.withdraw")}
@@ -97,35 +249,43 @@ const Wallet = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {transactions.map((transaction) => (
-                  <div
-                    key={transaction.id}
-                    className="flex items-center justify-between p-4 border rounded-lg hover:bg-secondary/50 transition-colors"
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className={`p-2 rounded-full ${
-                        transaction.type === "credit" 
-                          ? "bg-green-500/10 text-green-500" 
-                          : "bg-red-500/10 text-red-500"
+                {transactions.length === 0 ? (
+                  <p className="text-center text-muted-foreground py-8">
+                    {t("wallet.noTransactions")}
+                  </p>
+                ) : (
+                  transactions.map((transaction) => (
+                    <div
+                      key={transaction.id}
+                      className="flex items-center justify-between p-4 border rounded-lg hover:bg-secondary/50 transition-colors"
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className={`p-2 rounded-full ${
+                          transaction.type === "credit" 
+                            ? "bg-green-500/10 text-green-500" 
+                            : "bg-red-500/10 text-red-500"
+                        }`}>
+                          {transaction.type === "credit" ? (
+                            <ArrowDownRight className="h-4 w-4" />
+                          ) : (
+                            <ArrowUpRight className="h-4 w-4" />
+                          )}
+                        </div>
+                        <div>
+                          <p className="font-medium">{transaction.description}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {new Date(transaction.created_at).toLocaleDateString()}
+                          </p>
+                        </div>
+                      </div>
+                      <p className={`font-semibold ${
+                        transaction.type === "credit" ? "text-green-500" : "text-red-500"
                       }`}>
-                        {transaction.type === "credit" ? (
-                          <ArrowDownRight className="h-4 w-4" />
-                        ) : (
-                          <ArrowUpRight className="h-4 w-4" />
-                        )}
-                      </div>
-                      <div>
-                        <p className="font-medium">{transaction.description}</p>
-                        <p className="text-sm text-muted-foreground">{transaction.date}</p>
-                      </div>
+                        {transaction.type === "credit" ? "+" : "-"}${Number(transaction.amount).toFixed(2)}
+                      </p>
                     </div>
-                    <p className={`font-semibold ${
-                      transaction.type === "credit" ? "text-green-500" : "text-red-500"
-                    }`}>
-                      {transaction.type === "credit" ? "+" : "-"}${transaction.amount.toFixed(2)}
-                    </p>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
             </CardContent>
           </Card>

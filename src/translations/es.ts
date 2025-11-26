@@ -178,5 +178,11 @@ export const es = {
     addPaymentMethod: "Agregar Método de Pago",
     recentTransactions: "Transacciones Recientes",
     transactionHistory: "Tu historial de transacciones",
+    depositMoney: "Depositar Dinero",
+    depositDescription: "Ingresa la cantidad que deseas agregar a tu billetera",
+    amount: "Cantidad",
+    cancel: "Cancelar",
+    confirmDeposit: "Confirmar Depósito",
+    noTransactions: "No hay transacciones aún",
   },
 };
