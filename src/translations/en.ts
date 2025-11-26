@@ -178,5 +178,11 @@ export const en = {
     addPaymentMethod: "Add Payment Method",
     recentTransactions: "Recent Transactions",
     transactionHistory: "Your transaction history",
+    depositMoney: "Deposit Money",
+    depositDescription: "Enter the amount you want to add to your wallet",
+    amount: "Amount",
+    cancel: "Cancel",
+    confirmDeposit: "Confirm Deposit",
+    noTransactions: "No transactions yet",
   },
 };
