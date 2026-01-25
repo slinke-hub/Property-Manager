@@ -1,1 +1,7 @@
 project_id = "cxfsgqhviwtcsrrwqxrn"
+
+[functions.extract-receipt]
+verify_jwt = false
+
+[functions.send-receipt-notification]
+verify_jwt = false

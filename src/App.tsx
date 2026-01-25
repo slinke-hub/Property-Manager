@@ -13,6 +13,9 @@ import UserPortal from "./pages/UserPortal";
 import AdminPortal from "./pages/AdminPortal";
 import Wallet from "./pages/Wallet";
 import CommunityWallet from "./pages/CommunityWallet";
+import OwnerDashboard from "./pages/OwnerDashboard";
+import DuesTracking from "./pages/DuesTracking";
+import AdminReceiptReview from "./pages/AdminReceiptReview";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -34,6 +37,9 @@ const App = () => (
             <Route path="/admin-portal" element={<AdminPortal />} />
             <Route path="/wallet" element={<Wallet />} />
             <Route path="/community-wallet" element={<CommunityWallet />} />
+            <Route path="/owner-dashboard" element={<OwnerDashboard />} />
+            <Route path="/dues" element={<DuesTracking />} />
+            <Route path="/admin/receipts" element={<AdminReceiptReview />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
