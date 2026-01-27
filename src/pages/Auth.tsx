@@ -105,9 +105,10 @@ const Auth = () => {
                       <SelectTrigger>
                         <SelectValue placeholder={t("auth.selectAccountType")} />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="z-50 bg-popover border border-border shadow-lg">
                         <SelectItem value="owner">{t("auth.owner")}</SelectItem>
                         <SelectItem value="property_manager">{t("auth.propertyManager")}</SelectItem>
+                        <SelectItem value="admin">{t("auth.admin")}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>

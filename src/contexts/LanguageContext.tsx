@@ -1,10 +1,11 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { translations, Language } from "@/translations";
+import { translations, Language, isRTL } from "@/translations";
 
 interface LanguageContextType {
   language: Language;
   setLanguage: (lang: Language) => void;
   t: (key: string) => string;
+  isRTL: boolean;
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
@@ -18,6 +19,7 @@ export const LanguageProvider = ({ children }: { children: React.ReactNode }) =>
   useEffect(() => {
     localStorage.setItem("language", language);
     document.documentElement.lang = language;
+    document.documentElement.dir = isRTL(language) ? "rtl" : "ltr";
   }, [language]);
 
   const setLanguage = (lang: Language) => {
@@ -32,11 +34,20 @@ export const LanguageProvider = ({ children }: { children: React.ReactNode }) =>
       value = value?.[k];
     }
     
-    return value || key;
+    // Fallback to English if key not found
+    if (value === undefined) {
+      let fallback: any = translations.en;
+      for (const k of keys) {
+        fallback = fallback?.[k];
+      }
+      return fallback || key;
+    }
+    
+    return value;
   };
 
   return (
-    <LanguageContext.Provider value={{ language, setLanguage, t }}>
+    <LanguageContext.Provider value={{ language, setLanguage, t, isRTL: isRTL(language) }}>
       {children}
     </LanguageContext.Provider>
   );
