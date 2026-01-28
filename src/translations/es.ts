@@ -316,6 +316,10 @@ export const es = {
     statusPending: "Pendiente",
     statusPaid: "Pagado",
     statusOverdue: "Vencido",
+    actions: "Acciones",
+    markAsPaid: "Marcar como Pagado",
+    markAsPaidSuccess: "Cuota marcada como pagada correctamente",
+    markAsPaidError: "Error al marcar la cuota como pagada",
   },
   adminReceipts: {
     title: "Revisión de Recibos",

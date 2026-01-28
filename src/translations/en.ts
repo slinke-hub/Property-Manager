@@ -315,6 +315,10 @@ export const en = {
     statusPending: "Pending",
     statusPaid: "Paid",
     statusOverdue: "Overdue",
+    actions: "Actions",
+    markAsPaid: "Mark as Paid",
+    markAsPaidSuccess: "Due marked as paid successfully",
+    markAsPaidError: "Failed to mark due as paid",
   },
   adminReceipts: {
     title: "Receipt Review",

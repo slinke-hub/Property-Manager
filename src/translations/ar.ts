@@ -318,6 +318,10 @@ export const ar = {
     statusPending: "معلق",
     statusPaid: "مدفوع",
     statusOverdue: "متأخر",
+    actions: "الإجراءات",
+    markAsPaid: "تحديد كمدفوع",
+    markAsPaidSuccess: "تم تحديد المستحق كمدفوع بنجاح",
+    markAsPaidError: "فشل تحديد المستحق كمدفوع",
   },
   adminReceipts: {
     title: "مراجعة الإيصالات",

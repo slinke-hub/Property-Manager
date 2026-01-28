@@ -6,13 +6,16 @@ import { useUserRole } from "@/hooks/useUserRole";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import CreateDuesForm from "@/components/CreateDuesForm";
 import { supabase } from "@/integrations/supabase/client";
-import { Calendar, CheckCircle, XCircle, Clock } from "lucide-react";
+import { Calendar, CheckCircle, XCircle, Clock, Check } from "lucide-react";
+import { toast } from "sonner";
 
 interface DuesData {
+  id: string;
   user_id: string;
   user_email?: string;
   month: number;
@@ -94,7 +97,22 @@ const DuesTracking = () => {
     }
   };
 
-  const getStatusIcon = (status: string) => {
+  const handleMarkAsPaid = async (dueId: string) => {
+    try {
+      const { error } = await supabase
+        .from("monthly_dues")
+        .update({ status: "paid", paid_at: new Date().toISOString() })
+        .eq("id", dueId);
+
+      if (error) throw error;
+
+      toast.success(t("dues.markAsPaidSuccess"));
+      fetchDues();
+    } catch (error) {
+      console.error("Error marking due as paid:", error);
+      toast.error(t("dues.markAsPaidError"));
+    }
+  };
     switch (status) {
       case "paid":
         return <CheckCircle className="h-4 w-4 text-green-500" />;
@@ -308,6 +326,7 @@ const DuesTracking = () => {
                             <TableHead>{t("dues.amount")}</TableHead>
                             <TableHead>{t("dues.status")}</TableHead>
                             <TableHead>{t("dues.paidDate")}</TableHead>
+                            <TableHead>{t("dues.actions")}</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -326,6 +345,19 @@ const DuesTracking = () => {
                                 {due.paid_at
                                   ? new Date(due.paid_at).toLocaleDateString()
                                   : "-"}
+                              </TableCell>
+                              <TableCell>
+                                {due.status !== "paid" && (
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => handleMarkAsPaid(due.id)}
+                                    className="gap-1"
+                                  >
+                                    <Check className="h-3 w-3" />
+                                    {t("dues.markAsPaid")}
+                                  </Button>
+                                )}
                               </TableCell>
                             </TableRow>
                           ))}
