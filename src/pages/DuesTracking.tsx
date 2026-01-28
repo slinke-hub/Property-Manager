@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
+import CreateDuesForm from "@/components/CreateDuesForm";
 import { supabase } from "@/integrations/supabase/client";
 import { Calendar, CheckCircle, XCircle, Clock } from "lucide-react";
 
@@ -105,11 +106,12 @@ const DuesTracking = () => {
   };
 
   const getMonthName = (month: number) => {
-    const months = [
-      "January", "February", "March", "April", "May", "June",
-      "July", "August", "September", "October", "November", "December"
+    const monthKeys = [
+      "months.january", "months.february", "months.march", "months.april",
+      "months.may", "months.june", "months.july", "months.august",
+      "months.september", "months.october", "months.november", "months.december"
     ];
-    return months[month - 1];
+    return t(monthKeys[month - 1]);
   };
 
   const calculateYearlyTotal = (dues: DuesData[]) => {
@@ -230,7 +232,7 @@ const DuesTracking = () => {
                             <TableCell>
                               <div className="flex items-center gap-2">
                                 {getStatusIcon(due.status)}
-                                <span className="capitalize">{due.status}</span>
+                                <span className="capitalize">{t(`dues.status${due.status.charAt(0).toUpperCase() + due.status.slice(1)}`)}</span>
                               </div>
                             </TableCell>
                             <TableCell>
@@ -249,6 +251,9 @@ const DuesTracking = () => {
 
             {role === "admin" && (
               <TabsContent value="all-dues" className="space-y-6">
+                {/* Create Dues Form for Admins */}
+                <CreateDuesForm onDuesCreated={fetchDues} />
+
                 {/* Admin Summary */}
                 <div className="grid md:grid-cols-3 gap-4">
                   <Card>
@@ -314,7 +319,7 @@ const DuesTracking = () => {
                               <TableCell>
                                 <div className="flex items-center gap-2">
                                   {getStatusIcon(due.status)}
-                                  <span className="capitalize">{due.status}</span>
+                                  <span className="capitalize">{t(`dues.status${due.status.charAt(0).toUpperCase() + due.status.slice(1)}`)}</span>
                                 </div>
                               </TableCell>
                               <TableCell>
