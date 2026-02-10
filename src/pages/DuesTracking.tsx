@@ -11,7 +11,8 @@ import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import CreateDuesForm from "@/components/CreateDuesForm";
 import { supabase } from "@/integrations/supabase/client";
-import { Calendar, CheckCircle, XCircle, Clock, Check } from "lucide-react";
+import { Calendar, CheckCircle, XCircle, Clock, Check, AlertTriangle } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { toast } from "sonner";
 
 interface DuesData {
@@ -52,6 +53,26 @@ const DuesTracking = () => {
       fetchDues();
     }
   }, [user, role, selectedYear]);
+
+  // Auto-detect overdue dues on load
+  useEffect(() => {
+    if (myDues.length > 0) {
+      const now = new Date();
+      const currentMonth = now.getMonth() + 1;
+      const currentYear = now.getFullYear();
+      const overdueDues = myDues.filter(
+        (d) =>
+          d.status === "pending" &&
+          (d.year < currentYear || (d.year === currentYear && d.month < currentMonth))
+      );
+      if (overdueDues.length > 0) {
+        toast.warning(
+          t("dues.overdueWarning").replace("{count}", overdueDues.length.toString()),
+          { duration: 6000 }
+        );
+      }
+    }
+  }, [myDues]);
 
   const fetchDues = async () => {
     if (!user) return;
@@ -188,6 +209,29 @@ const DuesTracking = () => {
             </TabsList>
 
             <TabsContent value="my-dues" className="space-y-6">
+              {/* Overdue Alert */}
+              {(() => {
+                const now = new Date();
+                const currentMonth = now.getMonth() + 1;
+                const currentYear = now.getFullYear();
+                const overdueDues = myDues.filter(
+                  (d) =>
+                    d.status === "pending" &&
+                    (d.year < currentYear || (d.year === currentYear && d.month < currentMonth))
+                );
+                if (overdueDues.length > 0) {
+                  return (
+                    <Alert variant="destructive">
+                      <AlertTriangle className="h-4 w-4" />
+                      <AlertTitle>{t("dues.overdueAlert")}</AlertTitle>
+                      <AlertDescription>
+                        {t("dues.overdueAlertDesc").replace("{count}", overdueDues.length.toString()).replace("{amount}", `€${overdueDues.reduce((s, d) => s + d.amount, 0).toFixed(2)}`)}
+                      </AlertDescription>
+                    </Alert>
+                  );
+                }
+                return null;
+              })()}
               {/* Summary Cards */}
               <div className="grid md:grid-cols-3 gap-4">
                 <Card>
