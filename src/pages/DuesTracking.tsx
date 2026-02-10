@@ -113,6 +113,8 @@ const DuesTracking = () => {
       toast.error(t("dues.markAsPaidError"));
     }
   };
+
+  const getStatusIcon = (status: string) => {
     switch (status) {
       case "paid":
         return <CheckCircle className="h-4 w-4 text-green-500" />;
