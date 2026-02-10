@@ -322,6 +322,9 @@ export const ar = {
     markAsPaid: "تحديد كمدفوع",
     markAsPaidSuccess: "تم تحديد المستحق كمدفوع بنجاح",
     markAsPaidError: "فشل تحديد المستحق كمدفوع",
+    overdueWarning: "لديك {count} مستحقات متأخرة. يرجى إجراء الدفع في أقرب وقت ممكن.",
+    overdueAlert: "مدفوعات متأخرة",
+    overdueAlertDesc: "لديك {count} دفعة متأخرة بإجمالي {amount}. يرجى تسويتها في أسرع وقت.",
   },
   adminReceipts: {
     title: "مراجعة الإيصالات",

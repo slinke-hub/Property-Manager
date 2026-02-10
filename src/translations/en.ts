@@ -319,6 +319,9 @@ export const en = {
     markAsPaid: "Mark as Paid",
     markAsPaidSuccess: "Due marked as paid successfully",
     markAsPaidError: "Failed to mark due as paid",
+    overdueWarning: "You have {count} overdue dues. Please make your payments as soon as possible.",
+    overdueAlert: "Overdue Payments",
+    overdueAlertDesc: "You have {count} overdue payment(s) totaling {amount}. Please settle them promptly.",
   },
   adminReceipts: {
     title: "Receipt Review",

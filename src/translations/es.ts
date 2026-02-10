@@ -320,6 +320,9 @@ export const es = {
     markAsPaid: "Marcar como Pagado",
     markAsPaidSuccess: "Cuota marcada como pagada correctamente",
     markAsPaidError: "Error al marcar la cuota como pagada",
+    overdueWarning: "Tienes {count} cuotas vencidas. Por favor realiza tus pagos lo antes posible.",
+    overdueAlert: "Pagos Vencidos",
+    overdueAlertDesc: "Tienes {count} pago(s) vencido(s) por un total de {amount}. Por favor, liquídalos a la brevedad.",
   },
   adminReceipts: {
     title: "Revisión de Recibos",
