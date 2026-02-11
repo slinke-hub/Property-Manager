@@ -6,7 +6,6 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import Index from "./pages/Index";
-import Properties from "./pages/Properties";
 import Maintenance from "./pages/Maintenance";
 import Services from "./pages/Services";
 import Auth from "./pages/Auth";
@@ -17,6 +16,9 @@ import CommunityWallet from "./pages/CommunityWallet";
 import OwnerDashboard from "./pages/OwnerDashboard";
 import DuesTracking from "./pages/DuesTracking";
 import AdminReceiptReview from "./pages/AdminReceiptReview";
+import Announcements from "./pages/Announcements";
+import Forum from "./pages/Forum";
+import Documents from "./pages/Documents";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -31,7 +33,6 @@ const App = () => (
           <BrowserRouter>
             <Routes>
               <Route path="/" element={<Index />} />
-              <Route path="/properties" element={<Properties />} />
               <Route path="/maintenance" element={<Maintenance />} />
               <Route path="/services" element={<Services />} />
               <Route path="/auth" element={<Auth />} />
@@ -42,6 +43,9 @@ const App = () => (
               <Route path="/owner-dashboard" element={<OwnerDashboard />} />
               <Route path="/dues" element={<DuesTracking />} />
               <Route path="/admin/receipts" element={<AdminReceiptReview />} />
+              <Route path="/announcements" element={<Announcements />} />
+              <Route path="/forum" element={<Forum />} />
+              <Route path="/documents" element={<Documents />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
