@@ -3,71 +3,52 @@ import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Building2, Wrench, TrendingUp, Users, ArrowRight, LogIn } from "lucide-react";
+import { Wrench, Users, ArrowRight, LogIn, Megaphone, MessageSquare, FileText, Wallet, Calendar, Home } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import heroImage from "@/assets/hero-property.jpg";
 
 const Index = () => {
   const { t } = useLanguage();
-  
-  const stats = [
-    { label: t("stats.totalProperties"), value: "6", icon: Building2, trend: `+2 ${t("stats.thisMonth")}` },
-    { label: t("stats.activeRequests"), value: "12", icon: Wrench, trend: `3 ${t("stats.urgent")}` },
-    { label: t("stats.occupancyRate"), value: "91%", icon: Users, trend: `+5% ${t("stats.fromLastMonth")}` },
-    { label: t("stats.monthlyRevenue"), value: "$296K", icon: TrendingUp, trend: `+12% ${t("stats.growth")}` },
+
+  const features = [
+    { to: "/announcements", icon: Megaphone, title: t("home.announcements"), desc: t("home.announcementsDesc"), gradient: "from-primary to-primary/80" },
+    { to: "/maintenance", icon: Wrench, title: t("home.trackMaintenance"), desc: t("home.trackMaintenanceDesc"), gradient: "from-accent to-accent/80" },
+    { to: "/forum", icon: MessageSquare, title: t("home.communityForum"), desc: t("home.communityForumDesc"), gradient: "from-green-500 to-green-600" },
+    { to: "/documents", icon: FileText, title: t("home.documents"), desc: t("home.documentsDesc"), gradient: "from-purple-500 to-purple-600" },
+    { to: "/community-wallet", icon: Wallet, title: t("home.sharedWallet"), desc: t("home.sharedWalletDesc"), gradient: "from-primary to-primary/80" },
+    { to: "/dues", icon: Calendar, title: t("home.duesPayments"), desc: t("home.duesPaymentsDesc"), gradient: "from-accent to-accent/80" },
   ];
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-background to-secondary/20">
       <Navigation />
-      
+
       {/* Hero Section */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-accent/10" />
-        <div 
-          className="absolute inset-0 opacity-20"
-          style={{
-            backgroundImage: `url(${heroImage})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-          }}
-        />
-        
+        <div className="absolute inset-0 opacity-15" style={{ backgroundImage: `url(${heroImage})`, backgroundSize: "cover", backgroundPosition: "center" }} />
         <div className="container relative py-24 sm:py-32">
           <div className="max-w-3xl space-y-8">
             <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-2 text-sm font-medium text-primary border border-primary/20">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
-              </span>
+              <Home className="h-4 w-4" />
               {t("home.badge")}
             </div>
-            
             <h1 className="text-5xl sm:text-6xl font-bold tracking-tight">
               {t("home.title")}
               <span className="block mt-2 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
                 {t("home.titleHighlight")}
               </span>
             </h1>
-            
-            <p className="text-xl text-muted-foreground max-w-2xl">
-              {t("home.subtitle")}
-            </p>
-            
+            <p className="text-xl text-muted-foreground max-w-2xl">{t("home.subtitle")}</p>
             <div className="flex flex-wrap gap-4">
-              <Link to="/properties">
+              <Link to="/owner-dashboard">
                 <Button size="lg" className="gap-2">
-                  {t("home.viewProperties")}
+                  {t("home.goToDashboard")}
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
-              <Link to="/maintenance">
-                <Button size="lg" variant="outline" className="gap-2">
-                  {t("home.maintenanceRequests")}
-                </Button>
-              </Link>
               <Link to="/auth">
-                <Button size="lg" variant="secondary" className="gap-2">
+                <Button size="lg" variant="outline" className="gap-2">
                   <LogIn className="h-4 w-4" />
                   {t("auth.signIn")}
                 </Button>
@@ -77,93 +58,34 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Stats Section */}
-      <section className="container py-16">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {stats.map((stat, index) => {
-            const Icon = stat.icon;
-            return (
-              <Card key={index} className="relative overflow-hidden group hover:shadow-lg transition-all">
-                <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-primary/5 to-accent/5 rounded-full -translate-y-12 translate-x-12 group-hover:scale-150 transition-transform" />
-                <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between">
-                    <CardDescription>{stat.label}</CardDescription>
-                    <Icon className="h-4 w-4 text-muted-foreground" />
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-1">
-                    <CardTitle className="text-3xl">{stat.value}</CardTitle>
-                    <p className="text-xs text-muted-foreground">{stat.trend}</p>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* Quick Actions */}
+      {/* Features Grid */}
       <section className="container pb-24">
         <div className="space-y-8">
           <div className="text-center space-y-2">
             <h2 className="text-3xl font-bold tracking-tight">{t("home.quickActions")}</h2>
-            <p className="text-muted-foreground">
-              {t("home.quickActionsSubtitle")}
-            </p>
+            <p className="text-muted-foreground">{t("home.quickActionsSubtitle")}</p>
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Link to="/properties" className="group">
-              <Card className="h-full transition-all hover:shadow-lg hover:border-primary/50">
-                <CardHeader>
-                  <div className="h-12 w-12 rounded-lg bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center mb-4">
-                    <Building2 className="h-6 w-6 text-primary-foreground" />
-                  </div>
-                  <CardTitle className="group-hover:text-primary transition-colors">
-                    {t("home.manageProperties")}
-                  </CardTitle>
-                  <CardDescription>
-                    {t("home.managePropertiesDesc")}
-                  </CardDescription>
-                </CardHeader>
-              </Card>
-            </Link>
-
-            <Link to="/maintenance" className="group">
-              <Card className="h-full transition-all hover:shadow-lg hover:border-primary/50">
-                <CardHeader>
-                  <div className="h-12 w-12 rounded-lg bg-gradient-to-br from-accent to-accent-glow flex items-center justify-center mb-4">
-                    <Wrench className="h-6 w-6 text-accent-foreground" />
-                  </div>
-                  <CardTitle className="group-hover:text-primary transition-colors">
-                    {t("home.trackMaintenance")}
-                  </CardTitle>
-                  <CardDescription>
-                    {t("home.trackMaintenanceDesc")}
-                  </CardDescription>
-                </CardHeader>
-              </Card>
-            </Link>
-
-            <Link to="/services" className="group">
-              <Card className="h-full transition-all hover:shadow-lg hover:border-primary/50">
-                <CardHeader>
-                  <div className="h-12 w-12 rounded-lg bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center mb-4">
-                    <Users className="h-6 w-6 text-primary-foreground" />
-                  </div>
-                  <CardTitle className="group-hover:text-primary transition-colors">
-                    {t("home.serviceProviders")}
-                  </CardTitle>
-                  <CardDescription>
-                    {t("home.serviceProvidersDesc")}
-                  </CardDescription>
-                </CardHeader>
-              </Card>
-            </Link>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {features.map((f) => {
+              const Icon = f.icon;
+              return (
+                <Link key={f.to} to={f.to} className="group">
+                  <Card className="h-full transition-all hover:shadow-lg hover:border-primary/50">
+                    <CardHeader>
+                      <div className={`h-12 w-12 rounded-lg bg-gradient-to-br ${f.gradient} flex items-center justify-center mb-4`}>
+                        <Icon className="h-6 w-6 text-primary-foreground" />
+                      </div>
+                      <CardTitle className="group-hover:text-primary transition-colors">{f.title}</CardTitle>
+                      <CardDescription>{f.desc}</CardDescription>
+                    </CardHeader>
+                  </Card>
+                </Link>
+              );
+            })}
           </div>
         </div>
       </section>
+
       <Footer />
     </div>
   );
