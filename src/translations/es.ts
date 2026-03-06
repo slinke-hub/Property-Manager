@@ -14,6 +14,7 @@ export const es = {
     announcements: "Anuncios",
     forum: "Foro",
     documents: "Documentos",
+    polls: "Encuestas",
   },
   home: {
     badge: "Plataforma de Comunidad de Propietarios",
