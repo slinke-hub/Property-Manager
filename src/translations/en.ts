@@ -36,6 +36,8 @@ export const en = {
     sharedWalletDesc: "Transparent shared fund for community maintenance and expenses",
     duesPayments: "Dues & Payments",
     duesPaymentsDesc: "View and pay your monthly and annual community dues",
+    polls: "Voting & Polls",
+    pollsDesc: "Vote on community decisions and see results",
     manageProperties: "Manage Properties",
     managePropertiesDesc: "View and manage all your real estate properties in one place",
     serviceProviders: "Service Providers",
