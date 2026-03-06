@@ -21,6 +21,7 @@ import Forum from "./pages/Forum";
 import Documents from "./pages/Documents";
 import Properties from "./pages/Properties";
 import Profile from "./pages/Profile";
+import Polls from "./pages/Polls";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -50,6 +51,7 @@ const App = () => (
               <Route path="/documents" element={<Documents />} />
               <Route path="/properties" element={<Properties />} />
               <Route path="/profile" element={<Profile />} />
+              <Route path="/polls" element={<Polls />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
