@@ -14,6 +14,7 @@ export const en = {
     announcements: "Announcements",
     forum: "Forum",
     documents: "Documents",
+    polls: "Polls",
   },
   home: {
     badge: "Owner Community Platform",
