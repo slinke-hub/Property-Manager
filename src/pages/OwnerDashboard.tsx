@@ -30,7 +30,7 @@ const OwnerDashboard = () => {
   useEffect(() => {
     if (!authLoading && !user) {
       navigate("/auth");
-    } else if (!roleLoading && role !== "owner") {
+    } else if (!roleLoading && role !== "owner" && role !== "admin") {
       navigate("/user-portal");
     }
   }, [user, role, authLoading, roleLoading, navigate]);
@@ -243,7 +243,7 @@ const OwnerDashboard = () => {
     return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
   }
 
-  if (!user || role !== "owner") return null;
+  if (!user || (role !== "owner" && role !== "admin")) return null;
 
   return (
     <div className="min-h-screen flex flex-col">
