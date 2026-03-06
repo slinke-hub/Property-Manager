@@ -38,6 +38,8 @@ export const ar = {
     sharedWalletDesc: "صندوق مشترك شفاف لصيانة المجتمع والمصاريف",
     duesPayments: "المستحقات والمدفوعات",
     duesPaymentsDesc: "اعرض وادفع مستحقاتك الشهرية والسنوية",
+    polls: "التصويت والاستطلاعات",
+    pollsDesc: "صوّت على قرارات المجتمع واطلع على النتائج",
     manageProperties: "إدارة العقارات",
     managePropertiesDesc: "عرض وإدارة جميع عقاراتك في مكان واحد",
     serviceProviders: "مزودو الخدمات",
