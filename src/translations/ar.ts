@@ -16,6 +16,7 @@ export const ar = {
     announcements: "الإعلانات",
     forum: "المنتدى",
     documents: "المستندات",
+    polls: "التصويت",
   },
   home: {
     badge: "منصة مجتمع الملاك",
