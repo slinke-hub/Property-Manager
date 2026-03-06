@@ -19,6 +19,8 @@ import AdminReceiptReview from "./pages/AdminReceiptReview";
 import Announcements from "./pages/Announcements";
 import Forum from "./pages/Forum";
 import Documents from "./pages/Documents";
+import Properties from "./pages/Properties";
+import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
