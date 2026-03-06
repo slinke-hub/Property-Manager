@@ -36,6 +36,8 @@ export const es = {
     sharedWalletDesc: "Fondo compartido transparente para mantenimiento y gastos de la comunidad",
     duesPayments: "Cuotas y Pagos",
     duesPaymentsDesc: "Ve y paga tus cuotas mensuales y anuales de la comunidad",
+    polls: "Votaciones y Encuestas",
+    pollsDesc: "Vota en decisiones comunitarias y consulta los resultados",
     manageProperties: "Gestionar Propiedades",
     managePropertiesDesc: "Ver y gestionar todas tus propiedades en un solo lugar",
     serviceProviders: "Proveedores de Servicios",
