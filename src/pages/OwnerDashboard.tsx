@@ -30,7 +30,7 @@ const OwnerDashboard = () => {
   useEffect(() => {
     if (!authLoading && !user) {
       navigate("/auth");
-    } else if (!roleLoading && role !== "owner") {
+    } else if (!roleLoading && role !== "owner" && role !== "admin") {
       navigate("/user-portal");
     }
   }, [user, role, authLoading, roleLoading, navigate]);
