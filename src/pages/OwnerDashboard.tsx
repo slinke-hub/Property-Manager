@@ -243,7 +243,7 @@ const OwnerDashboard = () => {
     return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
   }
 
-  if (!user || role !== "owner") return null;
+  if (!user || (role !== "owner" && role !== "admin")) return null;
 
   return (
     <div className="min-h-screen flex flex-col">
