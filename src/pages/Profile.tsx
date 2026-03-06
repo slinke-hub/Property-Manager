@@ -12,7 +12,7 @@ import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { User, Mail, Shield, Save, Loader2 } from "lucide-react";
+import { User, Mail, Shield, Save, Loader2, Phone, Building, Hash } from "lucide-react";
 
 const Profile = () => {
   const { t } = useLanguage();
@@ -21,6 +21,9 @@ const Profile = () => {
   const navigate = useNavigate();
 
   const [fullName, setFullName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [unitNumber, setUnitNumber] = useState("");
+  const [building, setBuilding] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -36,10 +39,15 @@ const Profile = () => {
     setIsLoading(true);
     const { data } = await supabase
       .from("profiles")
-      .select("full_name")
+      .select("full_name, phone, unit_number, building")
       .eq("user_id", user!.id)
       .maybeSingle();
-    if (data?.full_name) setFullName(data.full_name);
+    if (data) {
+      if (data.full_name) setFullName(data.full_name);
+      if (data.phone) setPhone(data.phone);
+      if (data.unit_number) setUnitNumber(data.unit_number);
+      if (data.building) setBuilding(data.building);
+    }
     setIsLoading(false);
   };
 
@@ -51,7 +59,13 @@ const Profile = () => {
     setIsSaving(true);
     const { error } = await supabase
       .from("profiles")
-      .upsert({ user_id: user!.id, full_name: fullName.trim() }, { onConflict: "user_id" });
+      .upsert({
+        user_id: user!.id,
+        full_name: fullName.trim(),
+        phone: phone.trim() || null,
+        unit_number: unitNumber.trim() || null,
+        building: building.trim() || null,
+      }, { onConflict: "user_id" });
     if (error) {
       toast.error(t("profile.saveError"));
     } else {
@@ -74,14 +88,14 @@ const Profile = () => {
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-background to-secondary/20">
       <Navigation />
-      <main className="flex-1 container py-8">
-        <div className="max-w-2xl mx-auto space-y-8">
+      <main className="flex-1 container py-6 sm:py-8 px-4 sm:px-6">
+        <div className="max-w-2xl mx-auto space-y-6 sm:space-y-8">
           <div className="space-y-2">
             <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary border border-primary/20">
               <User className="h-3 w-3" />
               {t("profile.badge")}
             </div>
-            <h1 className="text-4xl font-bold tracking-tight">{t("profile.title")}</h1>
+            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">{t("profile.title")}</h1>
             <p className="text-muted-foreground">{t("profile.subtitle")}</p>
           </div>
 
@@ -123,7 +137,46 @@ const Profile = () => {
                   disabled={isLoading}
                 />
               </div>
-              <Button onClick={handleSave} disabled={isSaving} className="gap-2">
+              <div className="space-y-2">
+                <Label className="flex items-center gap-1.5">
+                  <Phone className="h-3.5 w-3.5" />
+                  {t("profile.phone")}
+                </Label>
+                <Input
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder={t("profile.phonePlaceholder")}
+                  disabled={isLoading}
+                  type="tel"
+                />
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="flex items-center gap-1.5">
+                    <Building className="h-3.5 w-3.5" />
+                    {t("profile.building")}
+                  </Label>
+                  <Input
+                    value={building}
+                    onChange={(e) => setBuilding(e.target.value)}
+                    placeholder={t("profile.buildingPlaceholder")}
+                    disabled={isLoading}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="flex items-center gap-1.5">
+                    <Hash className="h-3.5 w-3.5" />
+                    {t("profile.unitNumber")}
+                  </Label>
+                  <Input
+                    value={unitNumber}
+                    onChange={(e) => setUnitNumber(e.target.value)}
+                    placeholder={t("profile.unitPlaceholder")}
+                    disabled={isLoading}
+                  />
+                </div>
+              </div>
+              <Button onClick={handleSave} disabled={isSaving} className="gap-2 w-full sm:w-auto">
                 {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                 {t("profile.save")}
               </Button>

@@ -302,25 +302,102 @@ export type Database = {
           },
         ]
       }
+      poll_votes: {
+        Row: {
+          created_at: string
+          id: string
+          option_index: number
+          poll_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          option_index: number
+          poll_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          option_index?: number
+          poll_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "poll_votes_poll_id_fkey"
+            columns: ["poll_id"]
+            isOneToOne: false
+            referencedRelation: "polls"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      polls: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          expires_at: string | null
+          id: string
+          is_active: boolean
+          options: Json
+          title: string
+          user_id: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          options?: Json
+          title: string
+          user_id: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          options?: Json
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
+          building: string | null
           created_at: string | null
           full_name: string | null
           id: string
+          phone: string | null
+          unit_number: string | null
           updated_at: string | null
           user_id: string
         }
         Insert: {
+          building?: string | null
           created_at?: string | null
           full_name?: string | null
           id?: string
+          phone?: string | null
+          unit_number?: string | null
           updated_at?: string | null
           user_id: string
         }
         Update: {
+          building?: string | null
           created_at?: string | null
           full_name?: string | null
           id?: string
+          phone?: string | null
+          unit_number?: string | null
           updated_at?: string | null
           user_id?: string
         }
