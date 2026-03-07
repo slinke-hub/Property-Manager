@@ -63,11 +63,8 @@ export const SidebarContent = ({ onNavigate = () => { }, className }: SidebarPro
     return (
         <div className={cn("flex flex-col h-full bg-background border-r border-border", className)}>
             <div className="h-14 sm:h-16 flex items-center px-4 sm:px-6 border-b border-border shrink-0">
-                <Link to="/" onClick={onNavigate} className="flex items-center gap-2 font-semibold text-lg sm:text-xl shrink-0">
-                    <Home className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
-                    <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-                        {t("nav.appName")}
-                    </span>
+                <Link to="/" onClick={onNavigate} className="flex items-center gap-2 shrink-0">
+                    <img src="/logo.png" alt="MaintainFlow Logo" className="h-8 sm:h-10 w-auto object-contain" />
                 </Link>
             </div>
 

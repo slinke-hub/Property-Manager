@@ -22,11 +22,8 @@ export const AppLayout = () => {
             <div className="flex-1 flex flex-col lg:ml-64 min-h-screen transition-all w-full max-w-full">
                 {/* Mobile Header */}
                 <header className="lg:hidden sticky top-0 z-40 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 flex items-center justify-between h-14 px-4">
-                    <Link to="/" className="flex items-center gap-2 font-semibold text-lg">
-                        <Home className="h-5 w-5 text-primary" />
-                        <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-                            {t("nav.appName")}
-                        </span>
+                    <Link to="/" className="flex items-center gap-2">
+                        <img src="/logo.png" alt="MaintainFlow Logo" className="h-8 w-auto object-contain" />
                     </Link>
 
                     <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>

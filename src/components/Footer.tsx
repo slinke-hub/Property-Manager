@@ -12,10 +12,7 @@ const Footer = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
           <div className="space-y-3">
             <Link to="/" className="flex items-center gap-2">
-              <Home className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
-              <span className="font-semibold text-lg sm:text-xl bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-                {t("nav.appName")}
-              </span>
+              <img src="/logo.png" alt="MaintainFlow Logo" className="h-8 sm:h-10 w-auto object-contain" />
             </Link>
             <p className="text-sm text-muted-foreground">{t("home.badge")}</p>
           </div>
@@ -48,7 +45,7 @@ const Footer = () => {
 
         <div className="mt-6 sm:mt-8 pt-4 sm:pt-6 border-t border-border">
           <p className="text-center text-xs sm:text-sm text-muted-foreground">
-            © {currentYear} {t("nav.appName")}. {t("footer.rights")}
+            © {currentYear} MaintainFlow. {t("footer.rights")}
           </p>
         </div>
       </div>
