@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { User } from "@supabase/supabase-js";
+import { db } from "@/config/firebase";
+import { doc, getDoc } from "firebase/firestore";
+import { AppUser } from "@/hooks/useAuth";
 
 export type UserRole = "admin" | "user" | "owner" | "property_manager" | null;
 
-export const useUserRole = (user: User | null) => {
+export const useUserRole = (user: AppUser | null) => {
   const [role, setRole] = useState<UserRole>(null);
   const [loading, setLoading] = useState(true);
 
@@ -16,21 +17,22 @@ export const useUserRole = (user: User | null) => {
         return;
       }
 
-      if (user.email === 'privatepple@gmail.com' || user.email === 'privatepple@gmail.com') {
+      if (user.email === 'privatepple@gmail.com') {
         setRole('admin');
         setLoading(false);
         return;
       }
 
       try {
-        const { data, error } = await supabase
-          .from("user_roles")
-          .select("role")
-          .eq("user_id", user.id)
-          .maybeSingle();
+        const userDocRef = doc(db, "users", user.id);
+        const userDoc = await getDoc(userDocRef);
 
-        if (error) throw error;
-        setRole((data?.role as UserRole) ?? "user");
+        if (userDoc.exists()) {
+          const data = userDoc.data();
+          setRole((data.role as UserRole) ?? "user");
+        } else {
+          setRole("user");
+        }
       } catch (error) {
         console.error("Error fetching user role:", error);
         setRole("user");

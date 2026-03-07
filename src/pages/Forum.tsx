@@ -13,7 +13,8 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Footer from "@/components/Footer";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/config/firebase";
+import { collection, query, orderBy, getDocs, getDoc, doc, addDoc, deleteDoc, where } from "firebase/firestore";
 import { toast } from "sonner";
 import { MessageSquare, Plus, Send, Trash2, User } from "lucide-react";
 
@@ -63,40 +64,41 @@ const Forum = () => {
 
   const fetchPosts = async () => {
     setIsLoading(true);
-    const { data: postsData } = await supabase
-      .from("forum_posts")
-      .select("*")
-      .order("created_at", { ascending: false });
+    try {
+      const postsSnapshot = await getDocs(query(collection(db, "forum_posts"), orderBy("created_at", "desc")));
+      const postsData = postsSnapshot.docs.map(d => ({ id: d.id, ...d.data() } as ForumPost));
 
-    if (postsData) {
-      // Get comment counts
-      const postIds = postsData.map((p) => p.id);
-      const { data: commentsData } = await supabase
-        .from("forum_comments")
-        .select("post_id")
-        .in("post_id", postIds);
+      if (postsData.length > 0) {
+        // Get comment counts
+        const commentsSnapshot = await getDocs(collection(db, "forum_comments"));
+        const commentsData = commentsSnapshot.docs.map(d => d.data() as ForumComment);
 
-      const countMap: Record<string, number> = {};
-      commentsData?.forEach((c) => {
-        countMap[c.post_id] = (countMap[c.post_id] || 0) + 1;
-      });
+        const countMap: Record<string, number> = {};
+        commentsData.forEach((c) => {
+          countMap[c.post_id] = (countMap[c.post_id] || 0) + 1;
+        });
 
-      const enriched = postsData.map((p) => ({ ...p, comment_count: countMap[p.id] || 0 }));
-      setPosts(enriched);
+        const enriched = postsData.map((p) => ({ ...p, comment_count: countMap[p.id] || 0 }));
+        setPosts(enriched);
 
-      // Fetch profiles
-      const userIds = [...new Set(postsData.map((p) => p.user_id))];
-      if (userIds.length > 0) {
-        const { data: profilesData } = await supabase
-          .from("profiles")
-          .select("user_id, full_name")
-          .in("user_id", userIds);
-        if (profilesData) {
-          const map: Record<string, string> = {};
-          profilesData.forEach((p) => { map[p.user_id] = p.full_name || t("forum.anonymous"); });
-          setProfiles(map);
-        }
+        // Fetch profiles
+        const userIds = [...new Set(postsData.map((p) => p.user_id))];
+        const profilesMap: Record<string, string> = { ...profiles };
+
+        await Promise.all(userIds.map(async (uid) => {
+          if (!profilesMap[uid]) {
+            const userDoc = await getDoc(doc(db, "users", uid));
+            if (userDoc.exists()) {
+              profilesMap[uid] = userDoc.data()?.full_name || t("forum.anonymous");
+            }
+          }
+        }));
+        setProfiles(profilesMap);
+      } else {
+        setPosts([]);
       }
+    } catch (error) {
+      console.error("Error fetching forum posts:", error);
     }
     setIsLoading(false);
   };
@@ -106,72 +108,77 @@ const Forum = () => {
       toast.error(t("announcements.fillFields"));
       return;
     }
-    const { error } = await supabase.from("forum_posts").insert({
-      user_id: user!.id,
-      title: title.trim(),
-      content: content.trim(),
-      category,
-    });
-    if (error) {
-      toast.error(t("forum.createError"));
-    } else {
+    try {
+      await addDoc(collection(db, "forum_posts"), {
+        user_id: user!.id,
+        title: title.trim(),
+        content: content.trim(),
+        category,
+        created_at: new Date().toISOString()
+      });
       toast.success(t("forum.createSuccess"));
       setTitle("");
       setContent("");
       setCategory("general");
       setIsDialogOpen(false);
       fetchPosts();
+    } catch (error) {
+      toast.error(t("forum.createError"));
     }
   };
 
   const openPost = async (post: ForumPost) => {
     setSelectedPost(post);
-    const { data } = await supabase
-      .from("forum_comments")
-      .select("*")
-      .eq("post_id", post.id)
-      .order("created_at", { ascending: true });
+    try {
+      const q = query(collection(db, "forum_comments"), where("post_id", "==", post.id), orderBy("created_at", "asc"));
+      const snapshot = await getDocs(q);
+      const data = snapshot.docs.map(d => ({ id: d.id, ...d.data() } as ForumComment));
 
-    if (data) {
-      const userIds = [...new Set(data.map((c) => c.user_id))];
-      if (userIds.length > 0) {
-        const { data: profilesData } = await supabase
-          .from("profiles")
-          .select("user_id, full_name")
-          .in("user_id", userIds);
-        if (profilesData) {
-          profilesData.forEach((p) => {
-            profiles[p.user_id] = p.full_name || t("forum.anonymous");
-          });
-          setProfiles({ ...profiles });
-        }
+      if (data.length > 0) {
+        const userIds = [...new Set(data.map((c) => c.user_id))];
+        const profilesMap: Record<string, string> = { ...profiles };
+
+        await Promise.all(userIds.map(async (uid) => {
+          if (!profilesMap[uid]) {
+            const userDoc = await getDoc(doc(db, "users", uid));
+            if (userDoc.exists()) profilesMap[uid] = userDoc.data()?.full_name || t("forum.anonymous");
+          }
+        }));
+        setProfiles(profilesMap);
+        setComments(data.map((c) => ({ ...c, author_name: profilesMap[c.user_id] })));
+      } else {
+        setComments([]);
       }
-      setComments(data.map((c) => ({ ...c, author_name: profiles[c.user_id] })));
+    } catch (error) {
+      console.error("Error opening post:", error);
     }
   };
 
   const handleComment = async () => {
     if (!newComment.trim() || !selectedPost) return;
-    const { error } = await supabase.from("forum_comments").insert({
-      post_id: selectedPost.id,
-      user_id: user!.id,
-      content: newComment.trim(),
-    });
-    if (error) {
-      toast.error(t("forum.commentError"));
-    } else {
+    try {
+      await addDoc(collection(db, "forum_comments"), {
+        post_id: selectedPost.id,
+        user_id: user!.id,
+        content: newComment.trim(),
+        created_at: new Date().toISOString()
+      });
       setNewComment("");
       openPost(selectedPost);
       fetchPosts();
+    } catch (error) {
+      toast.error(t("forum.commentError"));
     }
   };
 
   const handleDeletePost = async (id: string) => {
-    const { error } = await supabase.from("forum_posts").delete().eq("id", id);
-    if (!error) {
+    try {
+      await deleteDoc(doc(db, "forum_posts", id));
       toast.success(t("forum.postDeleted"));
       setSelectedPost(null);
       fetchPosts();
+    } catch (error) {
+      console.error("Error deleting post:", error);
     }
   };
 

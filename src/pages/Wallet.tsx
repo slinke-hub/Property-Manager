@@ -10,7 +10,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Footer from "@/components/Footer";
 import { Wallet as WalletIcon, ArrowUpRight, ArrowDownRight, CreditCard } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/config/firebase";
+import { collection, query, where, orderBy, getDocs, limit, addDoc, updateDoc, doc } from "firebase/firestore";
 import { useToast } from "@/hooks/use-toast";
 
 const Wallet = () => {
@@ -45,38 +46,29 @@ const Wallet = () => {
     try {
       setLoading(true);
       // Fetch or create wallet
-      let { data: wallet, error: walletError } = await supabase
-        .from("wallets")
-        .select("*")
-        .eq("user_id", user!.id)
-        .single();
+      const walletQuery = query(collection(db, "wallets"), where("user_id", "==", user!.id), limit(1));
+      const walletSnapshot = await getDocs(walletQuery);
 
-      if (walletError && walletError.code === "PGRST116") {
+      let walletRecord: any = null;
+
+      if (walletSnapshot.empty) {
         // Wallet doesn't exist, create it
-        const { data: newWallet, error: createError } = await supabase
-          .from("wallets")
-          .insert({ user_id: user!.id, balance: 0 })
-          .select()
-          .single();
-
-        if (createError) throw createError;
-        wallet = newWallet;
-      } else if (walletError) {
-        throw walletError;
+        const newWalletRef = await addDoc(collection(db, "wallets"), {
+          user_id: user!.id,
+          balance: 0,
+        });
+        walletRecord = { id: newWalletRef.id, user_id: user!.id, balance: 0 };
+      } else {
+        walletRecord = { id: walletSnapshot.docs[0].id, ...walletSnapshot.docs[0].data() };
       }
 
-      setBalance(Number(wallet.balance));
+      setBalance(Number(walletRecord.balance));
 
       // Fetch transactions
-      const { data: transactionsData, error: transactionsError } = await supabase
-        .from("wallet_transactions")
-        .select("*")
-        .eq("user_id", user!.id)
-        .order("created_at", { ascending: false })
-        .limit(10);
+      const txQuery = query(collection(db, "wallet_transactions"), where("user_id", "==", user!.id), orderBy("created_at", "desc"), limit(10));
+      const txSnapshot = await getDocs(txQuery);
 
-      if (transactionsError) throw transactionsError;
-      setTransactions(transactionsData || []);
+      setTransactions(txSnapshot.docs.map(d => ({ id: d.id, ...d.data() })));
     } catch (error: any) {
       toast({
         title: "Error",
@@ -101,35 +93,29 @@ const Wallet = () => {
 
     try {
       // Get current wallet
-      const { data: wallet, error: walletError } = await supabase
-        .from("wallets")
-        .select("*")
-        .eq("user_id", user!.id)
-        .single();
+      const walletQuery = query(collection(db, "wallets"), where("user_id", "==", user!.id), limit(1));
+      const walletSnapshot = await getDocs(walletQuery);
 
-      if (walletError) throw walletError;
+      if (walletSnapshot.empty) {
+        throw new Error("Wallet not found");
+      }
+
+      const walletDocId = walletSnapshot.docs[0].id;
+      const walletData = walletSnapshot.docs[0].data();
 
       // Update balance
-      const newBalance = Number(wallet.balance) + amount;
-      const { error: updateError } = await supabase
-        .from("wallets")
-        .update({ balance: newBalance })
-        .eq("id", wallet.id);
-
-      if (updateError) throw updateError;
+      const newBalance = Number(walletData.balance) + amount;
+      await updateDoc(doc(db, "wallets", walletDocId), { balance: newBalance });
 
       // Create transaction record
-      const { error: transactionError } = await supabase
-        .from("wallet_transactions")
-        .insert({
-          wallet_id: wallet.id,
-          user_id: user!.id,
-          type: "credit",
-          amount: amount,
-          description: "Deposit",
-        });
-
-      if (transactionError) throw transactionError;
+      await addDoc(collection(db, "wallet_transactions"), {
+        wallet_id: walletDocId,
+        user_id: user!.id,
+        type: "credit",
+        amount: amount,
+        description: "Deposit",
+        created_at: new Date().toISOString()
+      });
 
       toast({
         title: "Success",
@@ -170,35 +156,29 @@ const Wallet = () => {
 
     try {
       // Get current wallet
-      const { data: wallet, error: walletError } = await supabase
-        .from("wallets")
-        .select("*")
-        .eq("user_id", user!.id)
-        .single();
+      const walletQuery = query(collection(db, "wallets"), where("user_id", "==", user!.id), limit(1));
+      const walletSnapshot = await getDocs(walletQuery);
 
-      if (walletError) throw walletError;
+      if (walletSnapshot.empty) {
+        throw new Error("Wallet not found");
+      }
+
+      const walletDocId = walletSnapshot.docs[0].id;
+      const walletData = walletSnapshot.docs[0].data();
 
       // Update balance
-      const newBalance = Number(wallet.balance) - amount;
-      const { error: updateError } = await supabase
-        .from("wallets")
-        .update({ balance: newBalance })
-        .eq("id", wallet.id);
-
-      if (updateError) throw updateError;
+      const newBalance = Number(walletData.balance) - amount;
+      await updateDoc(doc(db, "wallets", walletDocId), { balance: newBalance });
 
       // Create transaction record
-      const { error: transactionError } = await supabase
-        .from("wallet_transactions")
-        .insert({
-          wallet_id: wallet.id,
-          user_id: user!.id,
-          type: "debit",
-          amount: amount,
-          description: "Withdrawal",
-        });
-
-      if (transactionError) throw transactionError;
+      await addDoc(collection(db, "wallet_transactions"), {
+        wallet_id: walletDocId,
+        user_id: user!.id,
+        type: "debit",
+        amount: amount,
+        description: "Withdrawal",
+        created_at: new Date().toISOString()
+      });
 
       toast({
         title: "Success",
@@ -367,8 +347,8 @@ const Wallet = () => {
                     >
                       <div className="flex items-center gap-4">
                         <div className={`p-2 rounded-full ${transaction.type === "credit"
-                            ? "bg-green-500/10 text-green-500"
-                            : "bg-red-500/10 text-red-500"
+                          ? "bg-green-500/10 text-green-500"
+                          : "bg-red-500/10 text-red-500"
                           }`}>
                           {transaction.type === "credit" ? (
                             <ArrowDownRight className="h-4 w-4" />

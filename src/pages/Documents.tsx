@@ -12,7 +12,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Footer from "@/components/Footer";
-import { supabase } from "@/integrations/supabase/client";
+import { db, storage } from "@/config/firebase";
+import { collection, query, where, orderBy, getDocs, addDoc, deleteDoc, doc } from "firebase/firestore";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { toast } from "sonner";
 import { FileText, Plus, Upload, Download, Trash2, FolderOpen, Loader2 } from "lucide-react";
 
@@ -56,20 +58,25 @@ const Documents = () => {
 
   const fetchDocuments = async () => {
     setIsLoading(true);
-    const { data: myData } = await supabase
-      .from("documents")
-      .select("*")
-      .eq("user_id", user!.id)
-      .order("created_at", { ascending: false });
-    if (myData) setMyDocs(myData);
+    try {
+      const myDocsQuery = query(
+        collection(db, "documents"),
+        where("user_id", "==", user!.id),
+        orderBy("created_at", "desc")
+      );
+      const myDocsSnapshot = await getDocs(myDocsQuery);
+      setMyDocs(myDocsSnapshot.docs.map(d => ({ id: d.id, ...d.data() } as Document)));
 
-    const { data: sharedData } = await supabase
-      .from("documents")
-      .select("*")
-      .eq("is_shared", true)
-      .order("created_at", { ascending: false });
-    if (sharedData) setSharedDocs(sharedData);
-
+      const sharedDocsQuery = query(
+        collection(db, "documents"),
+        where("is_shared", "==", true),
+        orderBy("created_at", "desc")
+      );
+      const sharedDocsSnapshot = await getDocs(sharedDocsQuery);
+      setSharedDocs(sharedDocsSnapshot.docs.map(d => ({ id: d.id, ...d.data() } as Document)));
+    } catch (error) {
+      console.error("Error fetching documents:", error);
+    }
     setIsLoading(false);
   };
 
@@ -80,25 +87,23 @@ const Documents = () => {
     }
     setIsUploading(true);
     try {
-      const fileName = `${user!.id}/${Date.now()}-${selectedFile.name}`;
-      const { error: uploadError } = await supabase.storage
-        .from("documents")
-        .upload(fileName, selectedFile);
-      if (uploadError) throw uploadError;
+      const fileName = `${user!.id}/${Date.now()}-${selectedFile.name.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
+      const storageRef = ref(storage, `documents/${fileName}`);
 
-      const { data: urlData } = supabase.storage.from("documents").getPublicUrl(fileName);
+      const snapshot = await uploadBytes(storageRef, selectedFile);
+      const downloadURL = await getDownloadURL(snapshot.ref);
 
-      const { error } = await supabase.from("documents").insert({
+      await addDoc(collection(db, "documents"), {
         user_id: user!.id,
         title: title.trim(),
         description: description.trim() || null,
         category,
-        file_url: urlData.publicUrl,
+        file_url: downloadURL,
         file_name: selectedFile.name,
         file_size: selectedFile.size,
         is_shared: role === "admin" ? isShared : false,
+        created_at: new Date().toISOString()
       });
-      if (error) throw error;
 
       toast.success(t("documents.uploadSuccess"));
       setTitle("");
@@ -116,11 +121,14 @@ const Documents = () => {
     }
   };
 
-  const handleDelete = async (doc: Document) => {
-    const { error } = await supabase.from("documents").delete().eq("id", doc.id);
-    if (!error) {
+  const handleDelete = async (documentToDelete: Document) => {
+    try {
+      await deleteDoc(doc(db, "documents", documentToDelete.id));
       toast.success(t("documents.deleted"));
       fetchDocuments();
+    } catch (error) {
+      console.error("Delete error:", error);
+      toast.error(t("documents.deleteError") || "Failed to delete document");
     }
   };
 

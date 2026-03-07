@@ -23,7 +23,7 @@ export const AppLayout = () => {
                 {/* Mobile Header */}
                 <header className="lg:hidden sticky top-0 z-40 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 flex items-center justify-between h-14 px-4">
                     <Link to="/" className="flex items-center gap-2">
-                        <img src="/logo.png" alt="MaintainFlow Logo" className="h-8 w-auto object-contain" />
+                        <img src="/logo.png" alt="MaintainFlow Logo" className="h-14 w-auto object-contain" />
                     </Link>
 
                     <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>

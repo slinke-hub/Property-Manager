@@ -11,7 +11,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import Footer from "@/components/Footer";
 import { Users, ArrowUpRight, ArrowDownRight, PiggyBank } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/config/firebase";
+import { collection, query, orderBy, limit, getDocs, addDoc, updateDoc, doc } from "firebase/firestore";
 import { useToast } from "@/hooks/use-toast";
 
 const CommunityWallet = () => {
@@ -49,36 +50,22 @@ const CommunityWallet = () => {
       setLoading(true);
 
       // Fetch community wallet
-      const { data: wallet, error: walletError } = await supabase
-        .from("community_wallet")
-        .select("*")
-        .single();
+      const walletSnapshot = await getDocs(query(collection(db, "community_wallet"), limit(1)));
+      if (walletSnapshot.empty) {
+        throw new Error("Community wallet not found");
+      }
+      const wallet = walletSnapshot.docs[0];
 
-      if (walletError) throw walletError;
-
-      setBalance(Number(wallet.balance));
+      setBalance(Number(wallet.data().balance));
       setWalletId(wallet.id);
 
       // Fetch transactions
-      const { data: transactionsData, error: transactionsError } = await supabase
-        .from("community_transactions")
-        .select("*")
-        .eq("community_wallet_id", wallet.id)
-        .order("created_at", { ascending: false })
-        .limit(20);
-
-      if (transactionsError) throw transactionsError;
-      setTransactions(transactionsData || []);
+      const txSnapshot = await getDocs(query(collection(db, "community_transactions"), orderBy("created_at", "desc"), limit(20)));
+      setTransactions(txSnapshot.docs.map(d => ({ id: d.id, ...d.data() })));
 
       // Fetch contributions summary
-      const { data: contributionsData, error: contributionsError } = await supabase
-        .from("community_contributions")
-        .select("*")
-        .order("created_at", { ascending: false })
-        .limit(10);
-
-      if (contributionsError) throw contributionsError;
-      setContributions(contributionsData || []);
+      const contribSnapshot = await getDocs(query(collection(db, "community_contributions"), orderBy("created_at", "desc"), limit(10)));
+      setContributions(contribSnapshot.docs.map(d => ({ id: d.id, ...d.data() })));
     } catch (error: any) {
       toast({
         title: "Error",
@@ -106,50 +93,40 @@ const CommunityWallet = () => {
       const month = currentDate.getMonth() + 1;
       const year = currentDate.getFullYear();
 
-      // Add contribution record
-      const { error: contributionError } = await supabase
-        .from("community_contributions")
-        .insert({
-          user_id: user!.id,
-          amount: amount,
-          month: month,
-          year: year,
-          description: contributionDescription || `Monthly fee for ${month}/${year}`,
+      // Check if already contributed locally (simple validation)
+      const existingContrib = contributions.find((c) => c.user_id === user!.id && c.month === month && c.year === year);
+      if (existingContrib) {
+        toast({
+          title: "Already contributed",
+          description: `You have already contributed for ${month}/${year}`,
+          variant: "destructive",
         });
-
-      if (contributionError) {
-        if (contributionError.code === '23505') {
-          toast({
-            title: "Already contributed",
-            description: `You have already contributed for ${month}/${year}`,
-            variant: "destructive",
-          });
-          return;
-        }
-        throw contributionError;
+        return;
       }
+
+      // Add contribution record
+      await addDoc(collection(db, "community_contributions"), {
+        user_id: user!.id,
+        amount: amount,
+        month: month,
+        year: year,
+        description: contributionDescription || `Monthly fee for ${month}/${year}`,
+        created_at: new Date().toISOString()
+      });
 
       // Update wallet balance
       const newBalance = balance + amount;
-      const { error: updateError } = await supabase
-        .from("community_wallet")
-        .update({ balance: newBalance })
-        .eq("id", walletId);
-
-      if (updateError) throw updateError;
+      await updateDoc(doc(db, "community_wallet", walletId), { balance: newBalance });
 
       // Create transaction record
-      const { error: transactionError } = await supabase
-        .from("community_transactions")
-        .insert({
-          community_wallet_id: walletId,
-          user_id: user!.id,
-          type: "contribution",
-          amount: amount,
-          description: contributionDescription || `Monthly contribution for ${month}/${year}`,
-        });
-
-      if (transactionError) throw transactionError;
+      await addDoc(collection(db, "community_transactions"), {
+        community_wallet_id: walletId,
+        user_id: user!.id,
+        type: "contribution",
+        amount: amount,
+        description: contributionDescription || `Monthly contribution for ${month}/${year}`,
+        created_at: new Date().toISOString()
+      });
 
       toast({
         title: "Success",
@@ -201,25 +178,17 @@ const CommunityWallet = () => {
     try {
       // Update wallet balance
       const newBalance = balance - amount;
-      const { error: updateError } = await supabase
-        .from("community_wallet")
-        .update({ balance: newBalance })
-        .eq("id", walletId);
-
-      if (updateError) throw updateError;
+      await updateDoc(doc(db, "community_wallet", walletId), { balance: newBalance });
 
       // Create transaction record
-      const { error: transactionError } = await supabase
-        .from("community_transactions")
-        .insert({
-          community_wallet_id: walletId,
-          user_id: user!.id,
-          type: "payment",
-          amount: amount,
-          description: paymentDescription,
-        });
-
-      if (transactionError) throw transactionError;
+      await addDoc(collection(db, "community_transactions"), {
+        community_wallet_id: walletId,
+        user_id: user!.id,
+        type: "payment",
+        amount: amount,
+        description: paymentDescription,
+        created_at: new Date().toISOString()
+      });
 
       toast({
         title: "Success",
@@ -424,8 +393,8 @@ const CommunityWallet = () => {
                     >
                       <div className="flex items-center gap-4">
                         <div className={`p-2 rounded-full ${transaction.type === "contribution"
-                            ? "bg-green-500/10 text-green-500"
-                            : "bg-red-500/10 text-red-500"
+                          ? "bg-green-500/10 text-green-500"
+                          : "bg-red-500/10 text-red-500"
                           }`}>
                           {transaction.type === "contribution" ? (
                             <ArrowDownRight className="h-4 w-4" />

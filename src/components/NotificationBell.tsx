@@ -3,7 +3,8 @@ import { Bell } from "lucide-react";
 import { Button } from "./ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { useAuth } from "@/hooks/useAuth";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/config/firebase";
+import { collection, query, where, getDocs, orderBy, limit } from "firebase/firestore";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Link } from "react-router-dom";
 import { Badge } from "./ui/badge";
@@ -32,35 +33,46 @@ const NotificationBell = () => {
     // Fetch recent announcements (last 7 days)
     const weekAgo = new Date();
     weekAgo.setDate(weekAgo.getDate() - 7);
-    const { data: announcements } = await supabase
-      .from("announcements")
-      .select("id, title, priority, created_at")
-      .gte("created_at", weekAgo.toISOString())
-      .order("created_at", { ascending: false })
-      .limit(5);
-
-    if (announcements) {
-      announcements.forEach((a) =>
-        items.push({ id: a.id, type: "announcement", title: a.title, priority: a.priority, created_at: a.created_at })
+    try {
+      const announcementsQuery = query(
+        collection(db, "announcements"),
+        where("created_at", ">=", weekAgo.toISOString()),
+        orderBy("created_at", "desc"),
+        limit(5)
       );
-    }
-
-    // Fetch overdue dues
-    const now = new Date();
-    const { data: overdueDues } = await supabase
-      .from("monthly_dues")
-      .select("id, month, year, amount")
-      .eq("user_id", user!.id)
-      .eq("status", "pending")
-      .or(`year.lt.${now.getFullYear()},and(year.eq.${now.getFullYear()},month.lt.${now.getMonth() + 1})`);
-
-    if (overdueDues && overdueDues.length > 0) {
-      items.push({
-        id: "overdue",
-        type: "overdue",
-        title: t("notifications.overdueDues").replace("{count}", String(overdueDues.length)),
-        created_at: new Date().toISOString(),
+      const announcementsSnapshot = await getDocs(announcementsQuery);
+      announcementsSnapshot.docs.forEach((d) => {
+        const a = d.data();
+        items.push({ id: d.id, type: "announcement", title: a.title, priority: a.priority, created_at: a.created_at });
       });
+
+      // Fetch overdue dues
+      const now = new Date();
+      const currentYear = now.getFullYear();
+      const currentMonth = now.getMonth() + 1;
+
+      const duesQuery = query(
+        collection(db, "monthly_dues"),
+        where("user_id", "==", user!.id),
+        where("status", "==", "pending")
+      );
+      const duesSnapshot = await getDocs(duesQuery);
+
+      const overdueDues = duesSnapshot.docs.filter(d => {
+        const data = d.data();
+        return data.year < currentYear || (data.year === currentYear && data.month < currentMonth);
+      });
+
+      if (overdueDues.length > 0) {
+        items.push({
+          id: "overdue",
+          type: "overdue",
+          title: t("notifications.overdueDues").replace("{count}", String(overdueDues.length)),
+          created_at: new Date().toISOString(),
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching notifications:", error);
     }
 
     // Add mock maintenance update
@@ -70,6 +82,9 @@ const NotificationBell = () => {
       title: "Your request 'Leaking Faucet' is now correctly scheduled.",
       created_at: new Date().toISOString(),
     });
+
+    // Sort by created_at desc
+    items.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
     setNotifications(items);
   };

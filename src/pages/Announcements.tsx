@@ -12,7 +12,8 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Footer from "@/components/Footer";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/config/firebase";
+import { collection, query, orderBy, getDocs, addDoc, deleteDoc, doc } from "firebase/firestore";
 import { toast } from "sonner";
 import { Megaphone, Plus, AlertTriangle, Info, Bell, Trash2 } from "lucide-react";
 
@@ -48,12 +49,15 @@ const Announcements = () => {
 
   const fetchAnnouncements = async () => {
     setIsLoading(true);
-    const { data } = await supabase
-      .from("announcements")
-      .select("*")
-      .order("created_at", { ascending: false });
-    if (data) setAnnouncements(data);
-    setIsLoading(false);
+    try {
+      const q = query(collection(db, "announcements"), orderBy("created_at", "desc"));
+      const snapshot = await getDocs(q);
+      setAnnouncements(snapshot.docs.map(d => ({ id: d.id, ...d.data() } as Announcement)));
+    } catch (error) {
+      console.error("Error fetching announcements:", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleCreate = async () => {
@@ -61,29 +65,32 @@ const Announcements = () => {
       toast.error(t("announcements.fillFields"));
       return;
     }
-    const { error } = await supabase.from("announcements").insert({
-      user_id: user!.id,
-      title: title.trim(),
-      content: content.trim(),
-      priority,
-    });
-    if (error) {
-      toast.error(t("announcements.createError"));
-    } else {
+    try {
+      await addDoc(collection(db, "announcements"), {
+        user_id: user!.id,
+        title: title.trim(),
+        content: content.trim(),
+        priority,
+        created_at: new Date().toISOString()
+      });
       toast.success(t("announcements.createSuccess"));
       setTitle("");
       setContent("");
       setPriority("normal");
       setIsDialogOpen(false);
       fetchAnnouncements();
+    } catch (error) {
+      toast.error(t("announcements.createError"));
     }
   };
 
   const handleDelete = async (id: string) => {
-    const { error } = await supabase.from("announcements").delete().eq("id", id);
-    if (!error) {
+    try {
+      await deleteDoc(doc(db, "announcements", id));
       toast.success(t("announcements.deleted"));
       fetchAnnouncements();
+    } catch (error) {
+      console.error("Error deleting:", error);
     }
   };
 

@@ -62,9 +62,9 @@ export const SidebarContent = ({ onNavigate = () => { }, className }: SidebarPro
 
     return (
         <div className={cn("flex flex-col h-full bg-background border-r border-border", className)}>
-            <div className="h-14 sm:h-16 flex items-center px-4 sm:px-6 border-b border-border shrink-0">
-                <Link to="/" onClick={onNavigate} className="flex items-center gap-2 shrink-0">
-                    <img src="/logo.png" alt="MaintainFlow Logo" className="h-8 sm:h-10 w-auto object-contain" />
+            <div className="flex items-center justify-center py-8 px-2 border-b border-border shrink-0">
+                <Link to="/" onClick={onNavigate} className="flex items-center justify-center w-full shrink-0">
+                    <img src="/logo.png" alt="MaintainFlow Logo" className="h-auto w-full max-w-[220px] object-contain hover:scale-105 transition-transform duration-300" />
                 </Link>
             </div>
 
@@ -78,13 +78,13 @@ export const SidebarContent = ({ onNavigate = () => { }, className }: SidebarPro
                             to={item.to}
                             onClick={onNavigate}
                             className={cn(
-                                "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all w-full",
+                                "flex items-center gap-3 px-3 py-3 rounded-lg text-base font-medium transition-all w-full",
                                 "hover:bg-secondary hover:text-foreground",
                                 isActive ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground",
                                 isRTL && "flex-row-reverse"
                             )}
                         >
-                            <Icon className="h-4 w-4 shrink-0" />
+                            <Icon className="h-5 w-5 shrink-0" />
                             <span>{item.label}</span>
                         </Link>
                     );

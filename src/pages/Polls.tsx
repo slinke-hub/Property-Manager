@@ -13,7 +13,8 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
 import Footer from "@/components/Footer";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/config/firebase";
+import { collection, query, orderBy, getDocs, addDoc, updateDoc, deleteDoc, doc } from "firebase/firestore";
 import { toast } from "sonner";
 import { Vote, Plus, Trash2, CheckCircle2, Clock } from "lucide-react";
 
@@ -62,19 +63,15 @@ const Polls = () => {
 
   const fetchPolls = async () => {
     setIsLoading(true);
-    const { data: pollsData } = await supabase
-      .from("polls")
-      .select("*")
-      .order("created_at", { ascending: false });
+    try {
+      const pSnapshot = await getDocs(query(collection(db, "polls"), orderBy("created_at", "desc")));
+      const vSnapshot = await getDocs(collection(db, "poll_votes"));
 
-    const { data: votesData } = await supabase
-      .from("poll_votes")
-      .select("*");
-
-    if (pollsData) {
-      setPolls(pollsData.map((p: any) => ({ ...p, options: p.options as string[] })));
+      setPolls(pSnapshot.docs.map(d => ({ id: d.id, ...d.data() } as Poll)));
+      setVotes(vSnapshot.docs.map(d => ({ id: d.id, ...d.data() } as PollVote)));
+    } catch (error) {
+      console.error("Error fetching polls:", error);
     }
-    if (votesData) setVotes(votesData);
     setIsLoading(false);
   };
 
@@ -85,58 +82,62 @@ const Polls = () => {
       return;
     }
 
-    const { error } = await supabase.from("polls").insert({
-      user_id: user!.id,
-      title: newTitle.trim(),
-      description: newDesc.trim() || null,
-      options: filteredOptions,
-      category: newCategory,
-    });
-
-    if (error) {
-      toast.error(t("polls.createError"));
-    } else {
+    try {
+      await addDoc(collection(db, "polls"), {
+        user_id: user!.id,
+        title: newTitle.trim(),
+        description: newDesc.trim() || null,
+        options: filteredOptions,
+        category: newCategory,
+        is_active: true,
+        created_at: new Date().toISOString()
+      });
       toast.success(t("polls.createSuccess"));
       setNewTitle("");
       setNewDesc("");
       setNewOptions(["", ""]);
       setIsCreateOpen(false);
       fetchPolls();
+    } catch (error) {
+      toast.error(t("polls.createError"));
     }
   };
 
   const handleVote = async (pollId: string, optionIndex: number) => {
     const existingVote = votes.find((v) => v.poll_id === pollId && v.user_id === user!.id);
 
-    if (existingVote) {
-      if (existingVote.option_index === optionIndex) return;
-      const { error } = await supabase
-        .from("poll_votes")
-        .update({ option_index: optionIndex })
-        .eq("id", existingVote.id);
-      if (error) { toast.error(t("polls.voteError")); return; }
-    } else {
-      const { error } = await supabase.from("poll_votes").insert({
-        poll_id: pollId,
-        user_id: user!.id,
-        option_index: optionIndex,
-      });
-      if (error) { toast.error(t("polls.voteError")); return; }
+    try {
+      if (existingVote) {
+        if (existingVote.option_index === optionIndex) return;
+        await updateDoc(doc(db, "poll_votes", existingVote.id), { option_index: optionIndex });
+      } else {
+        await addDoc(collection(db, "poll_votes"), {
+          poll_id: pollId,
+          user_id: user!.id,
+          option_index: optionIndex,
+        });
+      }
+      toast.success(t("polls.voteSuccess"));
+      fetchPolls();
+    } catch (error) {
+      toast.error(t("polls.voteError"));
     }
-    toast.success(t("polls.voteSuccess"));
-    fetchPolls();
   };
 
   const handleDelete = async (id: string) => {
-    await supabase.from("polls").delete().eq("id", id);
-    toast.success(t("polls.deleted"));
-    fetchPolls();
+    try {
+      await deleteDoc(doc(db, "polls", id));
+      toast.success(t("polls.deleted"));
+      fetchPolls();
+    } catch (e) { }
   };
 
   const handleClosePoll = async (id: string) => {
-    await supabase.from("polls").update({ is_active: false }).eq("id", id);
-    toast.success(t("polls.closed"));
-    fetchPolls();
+    try {
+      await updateDoc(doc(db, "polls", id), { is_active: false });
+      toast.success(t("polls.closed"));
+      fetchPolls();
+    } catch (e) { }
   };
 
   const getVotesForPoll = (pollId: string) => votes.filter((v) => v.poll_id === pollId);
@@ -300,8 +301,8 @@ const Polls = () => {
                             onClick={() => poll.is_active && handleVote(poll.id, idx)}
                             disabled={!poll.is_active}
                             className={`w-full text-left p-3 rounded-lg border transition-all ${isSelected
-                                ? "border-primary bg-primary/5 ring-1 ring-primary"
-                                : "border-border hover:border-primary/50"
+                              ? "border-primary bg-primary/5 ring-1 ring-primary"
+                              : "border-border hover:border-primary/50"
                               } ${!poll.is_active ? "cursor-default" : "cursor-pointer"}`}
                           >
                             <div className="flex items-center justify-between mb-1.5">

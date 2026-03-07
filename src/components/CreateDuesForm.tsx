@@ -5,7 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/config/firebase";
+import { collection, query, where, getDocs, writeBatch, doc } from "firebase/firestore";
 import { toast } from "sonner";
 import { Plus, Users } from "lucide-react";
 
@@ -39,7 +40,7 @@ const CreateDuesForm = ({ onDuesCreated }: CreateDuesFormProps) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!amount || !month || !year) {
       toast.error(t("dues.fillAllFields"));
       return;
@@ -49,30 +50,29 @@ const CreateDuesForm = ({ onDuesCreated }: CreateDuesFormProps) => {
 
     try {
       // Fetch all owners
-      const { data: ownerRoles, error: rolesError } = await supabase
-        .from("user_roles")
-        .select("user_id")
-        .eq("role", "owner");
+      const ownerQuery = query(collection(db, "users"), where("role", "==", "owner"));
+      const ownerSnapshot = await getDocs(ownerQuery);
 
-      if (rolesError) throw rolesError;
-
-      if (!ownerRoles || ownerRoles.length === 0) {
+      if (ownerSnapshot.empty) {
         toast.error(t("dues.noOwnersFound"));
         setLoading(false);
         return;
       }
 
-      // Check for existing dues for this month/year
-      const { data: existingDues } = await supabase
-        .from("monthly_dues")
-        .select("user_id")
-        .eq("month", parseInt(month))
-        .eq("year", parseInt(year));
+      const ownerIds = ownerSnapshot.docs.map(d => d.id);
 
-      const existingUserIds = new Set(existingDues?.map(d => d.user_id) || []);
-      
+      // Check for existing dues for this month/year
+      const existingDuesQuery = query(
+        collection(db, "monthly_dues"),
+        where("month", "==", parseInt(month)),
+        where("year", "==", parseInt(year))
+      );
+      const existingDuesSnapshot = await getDocs(existingDuesQuery);
+
+      const existingUserIds = new Set(existingDuesSnapshot.docs.map(doc => doc.data().user_id));
+
       // Filter out owners who already have dues for this month
-      const ownersToCreate = ownerRoles.filter(o => !existingUserIds.has(o.user_id));
+      const ownersToCreate = ownerIds.filter(id => !existingUserIds.has(id));
 
       if (ownersToCreate.length === 0) {
         toast.info(t("dues.duesAlreadyExist"));
@@ -81,19 +81,20 @@ const CreateDuesForm = ({ onDuesCreated }: CreateDuesFormProps) => {
       }
 
       // Create dues for each owner
-      const duesEntries = ownersToCreate.map(owner => ({
-        user_id: owner.user_id,
-        amount: parseFloat(amount),
-        month: parseInt(month),
-        year: parseInt(year),
-        status: "pending",
-      }));
+      const batch = writeBatch(db);
+      ownersToCreate.forEach(ownerId => {
+        const newDueRef = doc(collection(db, "monthly_dues"));
+        batch.set(newDueRef, {
+          user_id: ownerId,
+          amount: parseFloat(amount),
+          month: parseInt(month),
+          year: parseInt(year),
+          status: "pending",
+          created_at: new Date().toISOString()
+        });
+      });
 
-      const { error: insertError } = await supabase
-        .from("monthly_dues")
-        .insert(duesEntries);
-
-      if (insertError) throw insertError;
+      await batch.commit();
 
       toast.success(t("dues.duesCreatedSuccess").replace("{count}", ownersToCreate.length.toString()));
       setAmount("");

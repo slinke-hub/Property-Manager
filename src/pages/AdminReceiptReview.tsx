@@ -12,7 +12,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import Footer from "@/components/Footer";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/config/firebase";
+import { collection, query, orderBy, getDocs, getDoc, doc, updateDoc, setDoc, limit, addDoc } from "firebase/firestore";
 import { toast } from "sonner";
 import { Receipt, CheckCircle, XCircle, Clock, Eye, Settings, Loader2 } from "lucide-react";
 
@@ -64,41 +65,32 @@ const AdminReceiptReview = () => {
 
   const fetchData = async () => {
     // Fetch all receipts
-    const { data: receiptsData } = await supabase
-      .from("receipts")
-      .select("*")
-      .order("created_at", { ascending: false });
+    const receiptsSnapshot = await getDocs(query(collection(db, "receipts"), orderBy("created_at", "desc")));
+    const receiptsData = receiptsSnapshot.docs.map(d => ({ id: d.id, ...d.data() } as ReceiptData));
 
-    if (receiptsData) {
+    if (receiptsData.length > 0) {
       setReceipts(receiptsData);
 
       // Fetch profiles for user names
       const userIds = [...new Set(receiptsData.map((r) => r.user_id))];
       if (userIds.length > 0) {
-        const { data: profilesData } = await supabase
-          .from("profiles")
-          .select("user_id, full_name")
-          .in("user_id", userIds);
-
-        if (profilesData) {
-          const profileMap: Record<string, string> = {};
-          profilesData.forEach((p: ProfileData) => {
-            profileMap[p.user_id] = p.full_name || "Unknown User";
-          });
-          setProfiles(profileMap);
-        }
+        const profileMap: Record<string, string> = {};
+        await Promise.all(userIds.map(async (uid) => {
+          const userDoc = await getDoc(doc(db, "users", uid));
+          if (userDoc.exists()) {
+            profileMap[uid] = userDoc.data()?.full_name || "Unknown User";
+          } else {
+            profileMap[uid] = "Unknown User";
+          }
+        }));
+        setProfiles(profileMap);
       }
     }
 
     // Fetch admin IBAN
-    const { data: settingsData } = await supabase
-      .from("admin_settings")
-      .select("setting_value")
-      .eq("setting_key", "admin_iban")
-      .single();
-
-    if (settingsData) {
-      setAdminIban(settingsData.setting_value);
+    const settingsDoc = await getDoc(doc(db, "admin_settings", "admin_iban"));
+    if (settingsDoc.exists()) {
+      setAdminIban(settingsDoc.data()?.setting_value || "");
     }
   };
 
@@ -117,40 +109,34 @@ const AdminReceiptReview = () => {
       const amount = parseFloat(reviewAmount);
 
       // Update receipt status
-      await supabase
-        .from("receipts")
-        .update({
-          status: "verified",
-          extracted_amount: amount,
-          admin_notes: reviewNotes || null,
-          reviewed_by: user!.id,
-          reviewed_at: new Date().toISOString(),
-        })
-        .eq("id", selectedReceipt.id);
+      await updateDoc(doc(db, "receipts", selectedReceipt.id), {
+        status: "verified",
+        extracted_amount: amount,
+        admin_notes: reviewNotes || null,
+        reviewed_by: user!.id,
+        reviewed_at: new Date().toISOString()
+      });
 
       // Get community wallet
-      const { data: walletData } = await supabase
-        .from("community_wallet")
-        .select("*")
-        .single();
+      const walletSnapshot = await getDocs(query(collection(db, "community_wallet"), limit(1)));
+      if (!walletSnapshot.empty) {
+        const walletDoc = walletSnapshot.docs[0];
+        const walletData = walletDoc.data();
 
-      if (walletData) {
         // Update community wallet balance
-        await supabase
-          .from("community_wallet")
-          .update({ balance: walletData.balance + amount })
-          .eq("id", walletData.id);
+        await updateDoc(doc(db, "community_wallet", walletDoc.id), {
+          balance: Number(walletData.balance) + amount
+        });
 
         // Create transaction record
-        await supabase
-          .from("community_transactions")
-          .insert({
-            community_wallet_id: walletData.id,
-            user_id: selectedReceipt.user_id,
-            amount,
-            type: "contribution",
-            description: `Receipt verified by admin - ${profiles[selectedReceipt.user_id] || "User"}`,
-          });
+        await addDoc(collection(db, "community_transactions"), {
+          community_wallet_id: walletDoc.id,
+          user_id: selectedReceipt.user_id,
+          amount,
+          type: "contribution",
+          description: `Receipt verified by admin - ${profiles[selectedReceipt.user_id] || "User"}`,
+          created_at: new Date().toISOString()
+        });
       }
 
       // Send notification
@@ -172,15 +158,12 @@ const AdminReceiptReview = () => {
 
     setIsProcessing(true);
     try {
-      await supabase
-        .from("receipts")
-        .update({
-          status: "rejected",
-          admin_notes: reviewNotes || "Rejected by admin",
-          reviewed_by: user!.id,
-          reviewed_at: new Date().toISOString(),
-        })
-        .eq("id", selectedReceipt.id);
+      await updateDoc(doc(db, "receipts", selectedReceipt.id), {
+        status: "rejected",
+        admin_notes: reviewNotes || "Rejected by admin",
+        reviewed_by: user!.id,
+        reviewed_at: new Date().toISOString()
+      });
 
       await sendNotification(selectedReceipt.id, "rejected");
 
@@ -197,24 +180,7 @@ const AdminReceiptReview = () => {
 
   const sendNotification = async (receiptId: string, type: string, amount?: number) => {
     try {
-      const { data: sessionData } = await supabase.auth.getSession();
-      await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-receipt-notification`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${sessionData.session?.access_token}`,
-          },
-          body: JSON.stringify({
-            type,
-            receiptId,
-            userEmail: "user@example.com", // Would get from profiles
-            amount,
-            notes: reviewNotes,
-          }),
-        }
-      );
+      console.log("Mock notification push:", { receiptId, type, amount, reviewNotes });
     } catch (error) {
       console.error("Notification error:", error);
     }
@@ -222,10 +188,10 @@ const AdminReceiptReview = () => {
 
   const handleUpdateIban = async () => {
     try {
-      await supabase
-        .from("admin_settings")
-        .update({ setting_value: adminIban })
-        .eq("setting_key", "admin_iban");
+      await setDoc(doc(db, "admin_settings", "admin_iban"), {
+        setting_value: adminIban,
+        setting_key: "admin_iban"
+      });
 
       toast.success(t("adminReceipts.ibanUpdated"));
       setIsSettingsOpen(false);
@@ -462,8 +428,8 @@ const AdminReceiptReview = () => {
                 </code>
                 {selectedReceipt.extracted_iban && (
                   <p className={`text-xs mt-1 ${selectedReceipt.extracted_iban.replace(/\s/g, "") === adminIban.replace(/\s/g, "")
-                      ? "text-green-600"
-                      : "text-red-600"
+                    ? "text-green-600"
+                    : "text-red-600"
                     }`}>
                     {selectedReceipt.extracted_iban.replace(/\s/g, "") === adminIban.replace(/\s/g, "")
                       ? "✓ IBAN matches"

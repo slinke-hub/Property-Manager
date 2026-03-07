@@ -10,7 +10,8 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import Footer from "@/components/Footer";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/config/firebase";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 import { toast } from "sonner";
 import { User, Mail, Shield, Save, Loader2, Phone, Building, Hash, Bell } from "lucide-react";
 
@@ -37,12 +38,10 @@ const Profile = () => {
 
   const fetchProfile = async () => {
     setIsLoading(true);
-    const { data } = await supabase
-      .from("profiles")
-      .select("full_name, phone, unit_number, building")
-      .eq("user_id", user!.id)
-      .maybeSingle();
-    if (data) {
+    const docRef = doc(db, "users", user!.id);
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      const data = docSnap.data();
       if (data.full_name) setFullName(data.full_name);
       if (data.phone) setPhone(data.phone);
       if (data.unit_number) setUnitNumber(data.unit_number);
@@ -57,19 +56,17 @@ const Profile = () => {
       return;
     }
     setIsSaving(true);
-    const { error } = await supabase
-      .from("profiles")
-      .upsert({
-        user_id: user!.id,
+    try {
+      await setDoc(doc(db, "users", user!.id), {
         full_name: fullName.trim(),
         phone: phone.trim() || null,
         unit_number: unitNumber.trim() || null,
         building: building.trim() || null,
-      }, { onConflict: "user_id" });
-    if (error) {
-      toast.error(t("profile.saveError"));
-    } else {
+      }, { merge: true });
       toast.success(t("profile.saved"));
+    } catch (error) {
+      console.error("Profile save error:", error);
+      toast.error(t("profile.saveError"));
     }
     setIsSaving(false);
   };

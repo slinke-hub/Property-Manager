@@ -12,7 +12,8 @@ import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import Footer from "@/components/Footer";
 import CreateDuesForm from "@/components/CreateDuesForm";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/config/firebase";
+import { collection, query, where, orderBy, getDocs, updateDoc, doc, getDoc } from "firebase/firestore";
 import {
   Calendar, CheckCircle, XCircle, Clock, Check, AlertTriangle,
   TrendingUp, Wallet, ArrowUpRight, ArrowDownRight, ChevronLeft, ChevronRight,
@@ -85,52 +86,50 @@ const DuesTracking = () => {
     if (!user) return;
     setIsLoading(true);
 
-    const { data: myDuesData } = await supabase
-      .from("monthly_dues")
-      .select("*")
-      .eq("user_id", user.id)
-      .eq("year", selectedYear)
-      .order("month", { ascending: true });
+    try {
+      const myDuesQuery = query(
+        collection(db, "monthly_dues"),
+        where("user_id", "==", user.id),
+        where("year", "==", selectedYear),
+        orderBy("month", "asc")
+      );
+      const myDuesSnapshot = await getDocs(myDuesQuery);
+      setMyDues(myDuesSnapshot.docs.map(d => ({ id: d.id, ...d.data() } as DuesData)));
 
-    if (myDuesData) setMyDues(myDuesData);
-
-    if (role === "admin") {
-      const { data: allDuesData } = await supabase
-        .from("monthly_dues")
-        .select("*")
-        .eq("year", selectedYear)
-        .order("month", { ascending: true });
-
-      if (allDuesData) {
+      if (role === "admin") {
+        const allDuesQuery = query(
+          collection(db, "monthly_dues"),
+          where("year", "==", selectedYear),
+          orderBy("month", "asc")
+        );
+        const allDuesSnapshot = await getDocs(allDuesQuery);
+        const allDuesData = allDuesSnapshot.docs.map(d => ({ id: d.id, ...d.data() } as DuesData));
         setAllDues(allDuesData);
+
         const userIds = [...new Set(allDuesData.map((d) => d.user_id))];
         if (userIds.length > 0) {
-          const { data: profilesData } = await supabase
-            .from("profiles")
-            .select("user_id, full_name")
-            .in("user_id", userIds);
-
-          if (profilesData) {
-            const profileMap: Record<string, string> = {};
-            profilesData.forEach((p: ProfileData) => {
-              profileMap[p.user_id] = p.full_name || "Unknown User";
-            });
-            setProfiles(profileMap);
-          }
+          const profileMap: Record<string, string> = {};
+          await Promise.all(userIds.map(async (uid) => {
+            const userDoc = await getDoc(doc(db, "users", uid));
+            if (userDoc.exists()) {
+              profileMap[uid] = userDoc.data()?.full_name || "Unknown User";
+            } else {
+              profileMap[uid] = "Unknown User";
+            }
+          }));
+          setProfiles(profileMap);
         }
       }
+    } catch (error) {
+      console.error("Error fetching dues:", error);
     }
+
     setIsLoading(false);
   };
 
   const handleMarkAsPaid = async (dueId: string) => {
     try {
-      const { error } = await supabase
-        .from("monthly_dues")
-        .update({ status: "paid", paid_at: new Date().toISOString() })
-        .eq("id", dueId);
-
-      if (error) throw error;
+      await updateDoc(doc(db, "monthly_dues", dueId), { status: "paid", paid_at: new Date().toISOString() });
       toast.success(t("dues.markAsPaidSuccess"));
       fetchDues();
     } catch (error) {
@@ -226,8 +225,8 @@ const DuesTracking = () => {
                   key={year}
                   onClick={() => setSelectedYear(year)}
                   className={`px-5 py-2.5 rounded-lg text-sm font-semibold transition-all ${selectedYear === year
-                      ? "bg-primary text-primary-foreground shadow-md"
-                      : "text-muted-foreground hover:text-foreground hover:bg-background/50"
+                    ? "bg-primary text-primary-foreground shadow-md"
+                    : "text-muted-foreground hover:text-foreground hover:bg-background/50"
                     }`}
                 >
                   {year}
@@ -387,10 +386,10 @@ const DuesTracking = () => {
                           >
                             <div className="flex items-center gap-4">
                               <div className={`h-10 w-10 rounded-xl flex items-center justify-center text-sm font-bold ${due.status === "paid"
-                                  ? "bg-green-500/10 text-green-600"
-                                  : isOverdue
-                                    ? "bg-destructive/10 text-destructive"
-                                    : "bg-muted text-muted-foreground"
+                                ? "bg-green-500/10 text-green-600"
+                                : isOverdue
+                                  ? "bg-destructive/10 text-destructive"
+                                  : "bg-muted text-muted-foreground"
                                 }`}>
                                 {getMonthShort(due.month)}
                               </div>
