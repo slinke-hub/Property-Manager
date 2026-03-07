@@ -9,7 +9,6 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { Users, ArrowUpRight, ArrowDownRight, PiggyBank } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -48,7 +47,7 @@ const CommunityWallet = () => {
   const fetchWalletData = async () => {
     try {
       setLoading(true);
-      
+
       // Fetch community wallet
       const { data: wallet, error: walletError } = await supabase
         .from("community_wallet")
@@ -56,7 +55,7 @@ const CommunityWallet = () => {
         .single();
 
       if (walletError) throw walletError;
-      
+
       setBalance(Number(wallet.balance));
       setWalletId(wallet.id);
 
@@ -250,10 +249,8 @@ const CommunityWallet = () => {
   const isOwner = role === "owner";
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-b from-background to-secondary/20">
-      <Navigation />
-      
-      <main className="flex-1 container py-8 space-y-8">
+    <div className="min-h-screen flex flex-col w-full bg-gradient-to-b from-background to-secondary/20">
+      <main className="flex-1 w-full p-4 sm:p-6 lg:p-8 space-y-8">
         <div className="max-w-5xl mx-auto space-y-8">
           <div>
             <h1 className="text-4xl font-bold tracking-tight flex items-center gap-2">
@@ -426,11 +423,10 @@ const CommunityWallet = () => {
                       className="flex items-center justify-between p-4 border rounded-lg hover:bg-secondary/50 transition-colors"
                     >
                       <div className="flex items-center gap-4">
-                        <div className={`p-2 rounded-full ${
-                          transaction.type === "contribution" 
-                            ? "bg-green-500/10 text-green-500" 
+                        <div className={`p-2 rounded-full ${transaction.type === "contribution"
+                            ? "bg-green-500/10 text-green-500"
                             : "bg-red-500/10 text-red-500"
-                        }`}>
+                          }`}>
                           {transaction.type === "contribution" ? (
                             <ArrowDownRight className="h-4 w-4" />
                           ) : (
@@ -444,9 +440,8 @@ const CommunityWallet = () => {
                           </p>
                         </div>
                       </div>
-                      <p className={`font-semibold ${
-                        transaction.type === "contribution" ? "text-green-500" : "text-red-500"
-                      }`}>
+                      <p className={`font-semibold ${transaction.type === "contribution" ? "text-green-500" : "text-red-500"
+                        }`}>
                         {transaction.type === "contribution" ? "+" : "-"}${Number(transaction.amount).toFixed(2)}
                       </p>
                     </div>

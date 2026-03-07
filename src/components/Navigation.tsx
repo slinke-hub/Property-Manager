@@ -28,8 +28,10 @@ const Navigation = () => {
     { to: "/", label: t("nav.dashboard"), icon: LayoutDashboard },
     { to: "/announcements", label: t("nav.announcements"), icon: Megaphone },
     { to: "/maintenance", label: t("nav.maintenance"), icon: Wrench },
+    { to: "/messages", label: "Messages", icon: MessageSquare },
     { to: "/forum", label: t("nav.forum"), icon: MessageSquare },
     { to: "/polls", label: t("nav.polls"), icon: Vote },
+    { to: "/amenities", label: "Amenities", icon: Calendar },
     { to: "/documents", label: t("nav.documents"), icon: FileText },
     { to: "/community-wallet", label: t("nav.communityWallet"), icon: Wallet },
   ];
@@ -51,7 +53,7 @@ const Navigation = () => {
 
   const allNavItems = [...baseNavItems, ...roleNavItems];
 
-  const NavLinks = ({ mobile = false, onItemClick = () => {} }) => (
+  const NavLinks = ({ mobile = false, onItemClick = () => { } }) => (
     <>
       {allNavItems.map((item) => {
         const Icon = item.icon;
@@ -78,7 +80,7 @@ const Navigation = () => {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <nav className="container flex h-14 sm:h-16 items-center justify-between px-4 sm:px-6">
+      <nav className="flex h-14 sm:h-16 items-center justify-between px-4 sm:px-6 lg:px-8 max-w-[100vw]">
         <Link to="/" className="flex items-center gap-2 font-semibold text-lg sm:text-xl shrink-0">
           <Home className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
           <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent hidden sm:inline">
@@ -86,7 +88,7 @@ const Navigation = () => {
           </span>
         </Link>
 
-        <div className="hidden xl:flex items-center gap-1 overflow-x-auto">
+        <div className="hidden xl:flex items-center justify-center flex-1 px-4 overflow-x-auto no-scrollbar pb-1 -mb-1">
           <div className={cn("flex items-center gap-1", isRTL && "flex-row-reverse")}>
             <NavLinks />
           </div>

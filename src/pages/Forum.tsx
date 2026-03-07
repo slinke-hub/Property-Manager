@@ -12,7 +12,6 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -190,9 +189,8 @@ const Forum = () => {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-b from-background to-secondary/20">
-      <Navigation />
-      <main className="flex-1 container py-8">
+    <div className="min-h-screen flex flex-col w-full bg-gradient-to-b from-background to-secondary/20">
+      <main className="flex-1 w-full p-4 sm:p-6 lg:p-8">
         <div className="max-w-4xl mx-auto space-y-8">
           <div className="flex items-start justify-between gap-4">
             <div className="space-y-2">

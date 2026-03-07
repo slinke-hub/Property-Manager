@@ -1,5 +1,4 @@
 import { Link } from "react-router-dom";
-import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,13 +15,13 @@ const Index = () => {
     { to: "/forum", icon: MessageSquare, title: t("home.communityForum"), desc: t("home.communityForumDesc"), gradient: "from-green-500 to-green-600" },
     { to: "/polls", icon: Vote, title: t("home.polls"), desc: t("home.pollsDesc"), gradient: "from-indigo-500 to-indigo-600" },
     { to: "/documents", icon: FileText, title: t("home.documents"), desc: t("home.documentsDesc"), gradient: "from-purple-500 to-purple-600" },
+    { to: "/amenities", icon: Calendar, title: "Amenities", desc: "Book common areas", gradient: "from-blue-500 to-blue-600" },
     { to: "/community-wallet", icon: Wallet, title: t("home.sharedWallet"), desc: t("home.sharedWalletDesc"), gradient: "from-primary to-primary/80" },
     { to: "/dues", icon: Calendar, title: t("home.duesPayments"), desc: t("home.duesPaymentsDesc"), gradient: "from-accent to-accent/80" },
   ];
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-background to-secondary/20">
-      <Navigation />
 
       {/* Hero Section */}
       <section className="relative overflow-hidden">

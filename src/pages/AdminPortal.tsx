@@ -5,9 +5,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
-import { Shield, Users, Home, Wrench, BarChart } from "lucide-react";
+import { Shield, Users, Home, Wrench, BarChart, FileText } from "lucide-react";
 
 const AdminPortal = () => {
   const { t } = useLanguage();
@@ -35,10 +34,9 @@ const AdminPortal = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <Navigation />
-      <main className="flex-1 container py-8">
-        <div className="max-w-6xl mx-auto space-y-8">
+    <div className="min-h-screen flex flex-col w-full">
+      <main className="flex-1 w-full p-4 sm:p-6 lg:p-8">
+        <div className="w-full space-y-8">
           <div className="flex items-center justify-between">
             <div>
               <div className="flex items-center gap-2">
@@ -97,27 +95,59 @@ const AdminPortal = () => {
               </CardContent>
             </Card>
 
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer col-span-full lg:col-span-3">
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate("/vendors")}>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <BarChart className="h-5 w-5 text-primary" />
-                  {t("portal.admin.analytics")}
+                  <Shield className="h-5 w-5 text-primary" />
+                  Vendor Directory
                 </CardTitle>
-                <CardDescription>View system analytics and reports</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="grid md:grid-cols-3 gap-4">
+                <p className="text-sm text-muted-foreground">
+                  Manage contractors and service providers
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate("/leases")}>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <FileText className="h-5 w-5 text-primary" />
+                  Leases & Contracts
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">
+                  View and manage tenant agreements
+                </p>
+              </CardContent>
+            </Card>
+
+
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer col-span-full lg:col-span-3" onClick={() => navigate("/analytics")}>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <div className="space-y-1">
+                  <CardTitle className="flex items-center gap-2">
+                    <BarChart className="h-5 w-5 text-primary" />
+                    {t("portal.admin.analytics")}
+                  </CardTitle>
+                  <CardDescription>View system analytics and comprehensive financial reports</CardDescription>
+                </div>
+                <Button variant="outline" size="sm">View Full Dashboard</Button>
+              </CardHeader>
+              <CardContent>
+                <div className="grid md:grid-cols-3 gap-4 mt-4">
                   <div className="p-4 bg-secondary/50 rounded-lg">
                     <p className="text-sm text-muted-foreground">Total Users</p>
-                    <p className="text-2xl font-bold text-primary">0</p>
+                    <p className="text-2xl font-bold text-primary">342</p>
                   </div>
                   <div className="p-4 bg-secondary/50 rounded-lg">
-                    <p className="text-sm text-muted-foreground">Active Properties</p>
-                    <p className="text-2xl font-bold text-primary">0</p>
+                    <p className="text-sm text-muted-foreground">Active Occupancy</p>
+                    <p className="text-2xl font-bold text-primary">91.3%</p>
                   </div>
                   <div className="p-4 bg-secondary/50 rounded-lg">
-                    <p className="text-sm text-muted-foreground">Pending Requests</p>
-                    <p className="text-2xl font-bold text-primary">0</p>
+                    <p className="text-sm text-muted-foreground">Open Requests</p>
+                    <p className="text-2xl font-bold text-red-500">24</p>
                   </div>
                 </div>
               </CardContent>

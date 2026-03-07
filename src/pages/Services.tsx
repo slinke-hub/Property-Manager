@@ -1,4 +1,3 @@
-import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import ServiceCard from "@/components/ServiceCard";
 import { Button } from "@/components/ui/button";
@@ -76,10 +75,8 @@ const Services = () => {
   ];
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-b from-background to-secondary/20">
-      <Navigation />
-      
-      <main className="flex-1 container py-8 space-y-8">
+    <div className="min-h-screen flex flex-col w-full bg-gradient-to-b from-background to-secondary/20">
+      <main className="flex-1 w-full p-4 sm:p-6 lg:p-8 space-y-8">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-4xl font-bold tracking-tight">{t("services.title")}</h1>

@@ -23,6 +23,12 @@ import Properties from "./pages/Properties";
 import Profile from "./pages/Profile";
 import Polls from "./pages/Polls";
 import NotFound from "./pages/NotFound";
+import Amenities from "./pages/Amenities";
+import Vendors from "./pages/Vendors";
+import Leases from "./pages/Leases";
+import Analytics from "./pages/Analytics";
+import Messages from "./pages/Messages";
+import { AppLayout } from "./components/AppLayout";
 
 const queryClient = new QueryClient();
 
@@ -35,31 +41,37 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
             <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/maintenance" element={<Maintenance />} />
-              <Route path="/services" element={<Services />} />
               <Route path="/auth" element={<Auth />} />
-              <Route path="/user-portal" element={<UserPortal />} />
-              <Route path="/admin-portal" element={<AdminPortal />} />
-              <Route path="/wallet" element={<Wallet />} />
-              <Route path="/community-wallet" element={<CommunityWallet />} />
-              <Route path="/owner-dashboard" element={<OwnerDashboard />} />
-              <Route path="/dues" element={<DuesTracking />} />
-              <Route path="/admin/receipts" element={<AdminReceiptReview />} />
-              <Route path="/announcements" element={<Announcements />} />
-              <Route path="/forum" element={<Forum />} />
-              <Route path="/documents" element={<Documents />} />
-              <Route path="/properties" element={<Properties />} />
-              <Route path="/profile" element={<Profile />} />
-              <Route path="/polls" element={<Polls />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
+              <Route element={<AppLayout />}>
+                <Route path="/" element={<Index />} />
+                <Route path="/maintenance" element={<Maintenance />} />
+                <Route path="/services" element={<Services />} />
+                <Route path="/user-portal" element={<UserPortal />} />
+                <Route path="/admin-portal" element={<AdminPortal />} />
+                <Route path="/wallet" element={<Wallet />} />
+                <Route path="/community-wallet" element={<CommunityWallet />} />
+                <Route path="/owner-dashboard" element={<OwnerDashboard />} />
+                <Route path="/dues" element={<DuesTracking />} />
+                <Route path="/admin/receipts" element={<AdminReceiptReview />} />
+                <Route path="/announcements" element={<Announcements />} />
+                <Route path="/forum" element={<Forum />} />
+                <Route path="/documents" element={<Documents />} />
+                <Route path="/properties" element={<Properties />} />
+                <Route path="/profile" element={<Profile />} />
+                <Route path="/polls" element={<Polls />} />
+                <Route path="/amenities" element={<Amenities />} />
+                <Route path="/vendors" element={<Vendors />} />
+                <Route path="/leases" element={<Leases />} />
+                <Route path="/analytics" element={<Analytics />} />
+                <Route path="/messages" element={<Messages />} />
+              </Route>
             </Routes>
           </BrowserRouter>
         </TooltipProvider>
       </LanguageProvider>
     </ThemeProvider>
-  </QueryClientProvider>
+  </QueryClientProvider >
 );
 
 export default App;

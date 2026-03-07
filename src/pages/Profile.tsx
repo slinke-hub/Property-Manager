@@ -8,11 +8,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import Navigation from "@/components/Navigation";
+import { Switch } from "@/components/ui/switch";
 import Footer from "@/components/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { User, Mail, Shield, Save, Loader2, Phone, Building, Hash } from "lucide-react";
+import { User, Mail, Shield, Save, Loader2, Phone, Building, Hash, Bell } from "lucide-react";
 
 const Profile = () => {
   const { t } = useLanguage();
@@ -86,10 +86,9 @@ const Profile = () => {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-b from-background to-secondary/20">
-      <Navigation />
-      <main className="flex-1 container py-6 sm:py-8 px-4 sm:px-6">
-        <div className="max-w-2xl mx-auto space-y-6 sm:space-y-8">
+    <div className="min-h-screen flex flex-col bg-gradient-to-b from-background to-secondary/20 w-full">
+      <main className="flex-1 w-full p-4 sm:p-6 lg:p-8">
+        <div className="w-full space-y-6 sm:space-y-8">
           <div className="space-y-2">
             <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary border border-primary/20">
               <User className="h-3 w-3" />
@@ -180,6 +179,39 @@ const Profile = () => {
                 {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                 {t("profile.save")}
               </Button>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Bell className="h-5 w-5 text-primary" />
+                Notification Preferences
+              </CardTitle>
+              <CardDescription>Manage how you receive alerts and reminders</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between border-b border-border pb-4">
+                <div className="space-y-0.5">
+                  <Label className="text-base">Rent & Dues Reminders</Label>
+                  <p className="text-sm text-muted-foreground">Receive reminders before dues are late.</p>
+                </div>
+                <Switch defaultChecked />
+              </div>
+              <div className="flex items-center justify-between border-b border-border pb-4">
+                <div className="space-y-0.5">
+                  <Label className="text-base">Maintenance Updates</Label>
+                  <p className="text-sm text-muted-foreground">Get notified about status changes to your requests.</p>
+                </div>
+                <Switch defaultChecked />
+              </div>
+              <div className="flex items-center justify-between pb-4">
+                <div className="space-y-0.5">
+                  <Label className="text-base">Community Announcements</Label>
+                  <p className="text-sm text-muted-foreground">Alerts for building-wide events and notices.</p>
+                </div>
+                <Switch defaultChecked />
+              </div>
             </CardContent>
           </Card>
         </div>

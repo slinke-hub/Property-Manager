@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { Wallet as WalletIcon, ArrowUpRight, ArrowDownRight, CreditCard } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -225,10 +224,8 @@ const Wallet = () => {
   if (!user || role !== "owner") return null;
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-b from-background to-secondary/20">
-      <Navigation />
-      
-      <main className="flex-1 container py-8 space-y-8">
+    <div className="min-h-screen flex flex-col w-full bg-gradient-to-b from-background to-secondary/20">
+      <main className="flex-1 w-full p-4 sm:p-6 lg:p-8 space-y-8">
         <div className="max-w-5xl mx-auto space-y-8">
           <div>
             <h1 className="text-4xl font-bold tracking-tight flex items-center gap-2">
@@ -369,11 +366,10 @@ const Wallet = () => {
                       className="flex items-center justify-between p-4 border rounded-lg hover:bg-secondary/50 transition-colors"
                     >
                       <div className="flex items-center gap-4">
-                        <div className={`p-2 rounded-full ${
-                          transaction.type === "credit" 
-                            ? "bg-green-500/10 text-green-500" 
+                        <div className={`p-2 rounded-full ${transaction.type === "credit"
+                            ? "bg-green-500/10 text-green-500"
                             : "bg-red-500/10 text-red-500"
-                        }`}>
+                          }`}>
                           {transaction.type === "credit" ? (
                             <ArrowDownRight className="h-4 w-4" />
                           ) : (
@@ -387,9 +383,8 @@ const Wallet = () => {
                           </p>
                         </div>
                       </div>
-                      <p className={`font-semibold ${
-                        transaction.type === "credit" ? "text-green-500" : "text-red-500"
-                      }`}>
+                      <p className={`font-semibold ${transaction.type === "credit" ? "text-green-500" : "text-red-500"
+                        }`}>
                         {transaction.type === "credit" ? "+" : "-"}${Number(transaction.amount).toFixed(2)}
                       </p>
                     </div>

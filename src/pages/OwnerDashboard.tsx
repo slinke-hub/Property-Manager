@@ -8,7 +8,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -19,7 +18,7 @@ const OwnerDashboard = () => {
   const { user, loading: authLoading, signOut } = useAuth();
   const { role, loading: roleLoading } = useUserRole(user);
   const navigate = useNavigate();
-  
+
   const [receipts, setReceipts] = useState<any[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -50,7 +49,7 @@ const OwnerDashboard = () => {
       .select("*")
       .eq("user_id", user.id)
       .order("created_at", { ascending: false });
-    
+
     if (receiptsData) setReceipts(receiptsData);
 
     // Fetch wallet balance
@@ -59,7 +58,7 @@ const OwnerDashboard = () => {
       .select("balance")
       .eq("user_id", user.id)
       .maybeSingle();
-    
+
     if (walletData) setWalletBalance(walletData.balance);
 
     // Fetch my dues
@@ -69,7 +68,7 @@ const OwnerDashboard = () => {
       .eq("user_id", user.id)
       .order("year", { ascending: false })
       .order("month", { ascending: false });
-    
+
     if (duesData) setMyDues(duesData);
   };
 
@@ -87,7 +86,7 @@ const OwnerDashboard = () => {
     try {
       // Convert file to base64 for AI processing
       const base64 = await fileToBase64(selectedFile);
-      
+
       // Upload file to storage
       const fileName = `${user.id}/${Date.now()}-${selectedFile.name}`;
       const { error: uploadError } = await supabase.storage
@@ -130,7 +129,7 @@ const OwnerDashboard = () => {
 
       if (extractResponse.ok) {
         const extraction = await extractResponse.json();
-        
+
         // Update receipt with extracted data
         await supabase
           .from("receipts")
@@ -150,7 +149,7 @@ const OwnerDashboard = () => {
         if (adminSettings && extraction.iban) {
           const cleanExtractedIban = extraction.iban.replace(/\s/g, "");
           const cleanAdminIban = adminSettings.setting_value.replace(/\s/g, "");
-          
+
           if (cleanExtractedIban === cleanAdminIban && extraction.amount) {
             // Auto-verify and credit
             await verifyAndCreditReceipt(receiptData.id, extraction.amount);
@@ -246,10 +245,9 @@ const OwnerDashboard = () => {
   if (!user || (role !== "owner" && role !== "admin")) return null;
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <Navigation />
-      <main className="flex-1 container py-8">
-        <div className="max-w-6xl mx-auto space-y-8">
+    <div className="min-h-screen flex flex-col w-full">
+      <main className="flex-1 w-full p-4 sm:p-6 lg:p-8">
+        <div className="w-full space-y-8">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent">
@@ -399,13 +397,12 @@ const OwnerDashboard = () => {
                         </div>
                       </div>
                       <span
-                        className={`text-xs px-2 py-1 rounded ${
-                          receipt.status === "verified"
-                            ? "bg-green-500/20 text-green-600"
-                            : receipt.status === "rejected"
+                        className={`text-xs px-2 py-1 rounded ${receipt.status === "verified"
+                          ? "bg-green-500/20 text-green-600"
+                          : receipt.status === "rejected"
                             ? "bg-red-500/20 text-red-600"
                             : "bg-yellow-500/20 text-yellow-600"
-                        }`}
+                          }`}
                       >
                         {receipt.status}
                       </span>

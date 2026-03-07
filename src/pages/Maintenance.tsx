@@ -1,5 +1,4 @@
 import { useState } from "react";
-import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import MaintenanceCard from "@/components/MaintenanceCard";
 import { Button } from "@/components/ui/button";
@@ -23,10 +22,10 @@ const Maintenance = () => {
 
   const requests = [
     { id: "1", title: "Leaking Faucet", property: "Sunset Apartments", unit: "2B", priority: "medium" as const, status: "pending" as const, createdAt: "2 hours ago", description: "Kitchen sink faucet is leaking continuously." },
-    { id: "2", title: "HVAC Not Working", property: "Riverside Complex", unit: "5A", priority: "urgent" as const, status: "in-progress" as const, createdAt: "4 hours ago", description: "Air conditioning unit not producing cold air." },
+    { id: "2", title: "HVAC Not Working", property: "Riverside Complex", unit: "5A", priority: "urgent" as const, status: "in-progress" as const, createdAt: "4 hours ago", description: "Air conditioning unit not producing cold air.", vendor: "Crystal Clear HVAC" },
     { id: "3", title: "Broken Window", property: "Garden View Suites", unit: "1C", priority: "high" as const, status: "pending" as const, createdAt: "1 day ago", description: "Bedroom window cracked, needs replacement." },
-    { id: "4", title: "Light Bulb Replacement", property: "Downtown Plaza", unit: "3D", priority: "low" as const, status: "completed" as const, createdAt: "2 days ago", description: "Hallway light bulb needs replacement." },
-    { id: "5", title: "Clogged Drain", property: "Metro Heights", unit: "4E", priority: "medium" as const, status: "in-progress" as const, createdAt: "5 hours ago", description: "Bathroom sink drain is clogged." },
+    { id: "4", title: "Light Bulb Replacement", property: "Downtown Plaza", unit: "3D", priority: "low" as const, status: "completed" as const, createdAt: "2 days ago", description: "Hallway light bulb needs replacement.", vendor: "ElectraServe Solutions" },
+    { id: "5", title: "Clogged Drain", property: "Metro Heights", unit: "4E", priority: "medium" as const, status: "in-progress" as const, createdAt: "5 hours ago", description: "Bathroom sink drain is clogged.", vendor: "QuickFix Plumbing" },
   ];
 
   const filterByStatus = (status: string) => {
@@ -48,9 +47,8 @@ const Maintenance = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-b from-background to-secondary/20">
-      <Navigation />
-      <main className="flex-1 container py-8 space-y-8">
+    <div className="min-h-screen flex flex-col w-full bg-gradient-to-b from-background to-secondary/20">
+      <main className="flex-1 w-full p-4 sm:p-6 lg:p-8 space-y-8">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-4xl font-bold tracking-tight">{t("maintenance.title")}</h1>

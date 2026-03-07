@@ -13,6 +13,7 @@ interface MaintenanceCardProps {
   status: "pending" | "in-progress" | "completed";
   createdAt: string;
   description: string;
+  vendor?: string;
 }
 
 const MaintenanceCard = ({
@@ -23,9 +24,10 @@ const MaintenanceCard = ({
   status,
   createdAt,
   description,
+  vendor,
 }: MaintenanceCardProps) => {
   const { t } = useLanguage();
-  
+
   const priorityConfig = {
     low: { color: "bg-blue-500/10 text-blue-700 border-blue-200", icon: Clock },
     medium: { color: "bg-yellow-500/10 text-yellow-700 border-yellow-200", icon: Clock },
@@ -48,9 +50,17 @@ const MaintenanceCard = ({
         <div className="flex items-start justify-between gap-4">
           <div className="space-y-1 flex-1">
             <CardTitle className="text-lg">{title}</CardTitle>
-            <CardDescription className="flex items-center gap-1 text-sm">
-              <MapPin className="h-3 w-3" />
-              {property} - {t("maintenance.unit")} {unit}
+            <CardDescription className="flex flex-col gap-1 text-sm mt-1">
+              <div className="flex items-center gap-1">
+                <MapPin className="h-3 w-3" />
+                {property} - {t("maintenance.unit")} {unit}
+              </div>
+              {vendor && (
+                <div className="flex items-center gap-1 text-primary">
+                  <CheckCircle className="h-3 w-3" />
+                  Assigned to: {vendor}
+                </div>
+              )}
             </CardDescription>
           </div>
           <div className="flex gap-2">
@@ -65,10 +75,10 @@ const MaintenanceCard = ({
           </div>
         </div>
       </CardHeader>
-      
+
       <CardContent className="space-y-4">
         <p className="text-sm text-muted-foreground">{description}</p>
-        
+
         <div className="flex items-center justify-between pt-2 border-t border-border">
           <span className="text-xs text-muted-foreground">{t("maintenance.created")} {createdAt}</span>
           <Button size="sm" variant="outline">{t("maintenance.viewDetails")}</Button>

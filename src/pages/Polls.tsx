@@ -12,7 +12,6 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
-import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -156,9 +155,8 @@ const Polls = () => {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-b from-background to-secondary/20">
-      <Navigation />
-      <main className="flex-1 container py-6 sm:py-8 px-4 sm:px-6">
+    <div className="min-h-screen flex flex-col w-full bg-gradient-to-b from-background to-secondary/20">
+      <main className="flex-1 w-full p-4 sm:p-6 lg:p-8">
         <div className="max-w-4xl mx-auto space-y-6 sm:space-y-8">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="space-y-2">
@@ -301,11 +299,10 @@ const Polls = () => {
                             key={idx}
                             onClick={() => poll.is_active && handleVote(poll.id, idx)}
                             disabled={!poll.is_active}
-                            className={`w-full text-left p-3 rounded-lg border transition-all ${
-                              isSelected
+                            className={`w-full text-left p-3 rounded-lg border transition-all ${isSelected
                                 ? "border-primary bg-primary/5 ring-1 ring-primary"
                                 : "border-border hover:border-primary/50"
-                            } ${!poll.is_active ? "cursor-default" : "cursor-pointer"}`}
+                              } ${!poll.is_active ? "cursor-default" : "cursor-pointer"}`}
                           >
                             <div className="flex items-center justify-between mb-1.5">
                               <span className="text-sm font-medium">{option}</span>

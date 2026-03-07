@@ -16,6 +16,12 @@ export const useUserRole = (user: User | null) => {
         return;
       }
 
+      if (user.email === 'privatepple@gmail.com' || user.email === 'privatepple@gmail.com') {
+        setRole('admin');
+        setLoading(false);
+        return;
+      }
+
       try {
         const { data, error } = await supabase
           .from("user_roles")

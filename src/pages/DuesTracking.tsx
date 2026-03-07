@@ -10,7 +10,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
-import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import CreateDuesForm from "@/components/CreateDuesForm";
 import { supabase } from "@/integrations/supabase/client";
@@ -184,9 +183,8 @@ const DuesTracking = () => {
 
   if (authLoading || roleLoading) {
     return (
-      <div className="min-h-screen flex flex-col">
-        <Navigation />
-        <main className="flex-1 container py-8">
+      <div className="min-h-screen flex flex-col w-full">
+        <main className="flex-1 w-full p-4 sm:p-6 lg:p-8">
           <div className="max-w-6xl mx-auto space-y-8">
             <Skeleton className="h-12 w-64" />
             <Skeleton className="h-6 w-96" />
@@ -205,9 +203,8 @@ const DuesTracking = () => {
   const years = [2024, 2025, 2026];
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-b from-background to-secondary/20">
-      <Navigation />
-      <main className="flex-1 container py-8">
+    <div className="min-h-screen flex flex-col w-full bg-gradient-to-b from-background to-secondary/20">
+      <main className="flex-1 w-full p-4 sm:p-6 lg:p-8">
         <div className="max-w-6xl mx-auto space-y-8">
           {/* Page Header */}
           <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
@@ -228,11 +225,10 @@ const DuesTracking = () => {
                 <button
                   key={year}
                   onClick={() => setSelectedYear(year)}
-                  className={`px-5 py-2.5 rounded-lg text-sm font-semibold transition-all ${
-                    selectedYear === year
+                  className={`px-5 py-2.5 rounded-lg text-sm font-semibold transition-all ${selectedYear === year
                       ? "bg-primary text-primary-foreground shadow-md"
                       : "text-muted-foreground hover:text-foreground hover:bg-background/50"
-                  }`}
+                    }`}
                 >
                   {year}
                 </button>
@@ -386,18 +382,16 @@ const DuesTracking = () => {
                         return (
                           <div
                             key={`${due.month}-${due.year}`}
-                            className={`flex items-center justify-between px-6 py-4 transition-colors hover:bg-muted/30 ${
-                              isCurrent ? "bg-primary/5 border-l-2 border-l-primary" : ""
-                            } ${isOverdue ? "bg-destructive/5 border-l-2 border-l-destructive" : ""}`}
+                            className={`flex items-center justify-between px-6 py-4 transition-colors hover:bg-muted/30 ${isCurrent ? "bg-primary/5 border-l-2 border-l-primary" : ""
+                              } ${isOverdue ? "bg-destructive/5 border-l-2 border-l-destructive" : ""}`}
                           >
                             <div className="flex items-center gap-4">
-                              <div className={`h-10 w-10 rounded-xl flex items-center justify-center text-sm font-bold ${
-                                due.status === "paid"
+                              <div className={`h-10 w-10 rounded-xl flex items-center justify-center text-sm font-bold ${due.status === "paid"
                                   ? "bg-green-500/10 text-green-600"
                                   : isOverdue
-                                  ? "bg-destructive/10 text-destructive"
-                                  : "bg-muted text-muted-foreground"
-                              }`}>
+                                    ? "bg-destructive/10 text-destructive"
+                                    : "bg-muted text-muted-foreground"
+                                }`}>
                                 {getMonthShort(due.month)}
                               </div>
                               <div>
@@ -414,9 +408,8 @@ const DuesTracking = () => {
                               <p className="font-semibold text-lg tabular-nums">€{due.amount.toFixed(2)}</p>
                               <Badge
                                 variant={due.status === "paid" ? "default" : isOverdue ? "destructive" : "secondary"}
-                                className={`capitalize min-w-[80px] justify-center ${
-                                  due.status === "paid" ? "bg-green-500/90 hover:bg-green-500" : ""
-                                }`}
+                                className={`capitalize min-w-[80px] justify-center ${due.status === "paid" ? "bg-green-500/90 hover:bg-green-500" : ""
+                                  }`}
                               >
                                 {due.status === "paid" && <CheckCircle className="h-3 w-3 mr-1" />}
                                 {isOverdue && due.status !== "paid" && <AlertTriangle className="h-3 w-3 mr-1" />}

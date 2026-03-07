@@ -11,7 +11,6 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -38,7 +37,7 @@ const AdminReceiptReview = () => {
   const { user, loading: authLoading } = useAuth();
   const { role, loading: roleLoading } = useUserRole(user);
   const navigate = useNavigate();
-  
+
   const [receipts, setReceipts] = useState<ReceiptData[]>([]);
   const [profiles, setProfiles] = useState<Record<string, string>>({});
   const [selectedReceipt, setSelectedReceipt] = useState<ReceiptData | null>(null);
@@ -69,10 +68,10 @@ const AdminReceiptReview = () => {
       .from("receipts")
       .select("*")
       .order("created_at", { ascending: false });
-    
+
     if (receiptsData) {
       setReceipts(receiptsData);
-      
+
       // Fetch profiles for user names
       const userIds = [...new Set(receiptsData.map((r) => r.user_id))];
       if (userIds.length > 0) {
@@ -80,7 +79,7 @@ const AdminReceiptReview = () => {
           .from("profiles")
           .select("user_id, full_name")
           .in("user_id", userIds);
-        
+
         if (profilesData) {
           const profileMap: Record<string, string> = {};
           profilesData.forEach((p: ProfileData) => {
@@ -97,7 +96,7 @@ const AdminReceiptReview = () => {
       .select("setting_value")
       .eq("setting_key", "admin_iban")
       .single();
-    
+
     if (settingsData) {
       setAdminIban(settingsData.setting_value);
     }
@@ -112,11 +111,11 @@ const AdminReceiptReview = () => {
 
   const handleVerify = async () => {
     if (!selectedReceipt || !reviewAmount) return;
-    
+
     setIsProcessing(true);
     try {
       const amount = parseFloat(reviewAmount);
-      
+
       // Update receipt status
       await supabase
         .from("receipts")
@@ -170,7 +169,7 @@ const AdminReceiptReview = () => {
 
   const handleReject = async () => {
     if (!selectedReceipt) return;
-    
+
     setIsProcessing(true);
     try {
       await supabase
@@ -259,9 +258,8 @@ const AdminReceiptReview = () => {
   if (!user || role !== "admin") return null;
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <Navigation />
-      <main className="flex-1 container py-8">
+    <div className="min-h-screen flex flex-col w-full">
+      <main className="flex-1 w-full p-4 sm:p-6 lg:p-8">
         <div className="max-w-6xl mx-auto space-y-8">
           <div className="flex items-center justify-between">
             <div>
@@ -463,11 +461,10 @@ const AdminReceiptReview = () => {
                   {adminIban}
                 </code>
                 {selectedReceipt.extracted_iban && (
-                  <p className={`text-xs mt-1 ${
-                    selectedReceipt.extracted_iban.replace(/\s/g, "") === adminIban.replace(/\s/g, "")
+                  <p className={`text-xs mt-1 ${selectedReceipt.extracted_iban.replace(/\s/g, "") === adminIban.replace(/\s/g, "")
                       ? "text-green-600"
                       : "text-red-600"
-                  }`}>
+                    }`}>
                     {selectedReceipt.extracted_iban.replace(/\s/g, "") === adminIban.replace(/\s/g, "")
                       ? "✓ IBAN matches"
                       : "✗ IBAN does not match"}

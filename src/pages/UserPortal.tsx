@@ -5,7 +5,6 @@ import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { User, Home, Wrench, Wallet, Shield, Users, BarChart, ClipboardList } from "lucide-react";
 
@@ -35,10 +34,9 @@ const UserPortal = () => {
   // Owner Dashboard
   if (role === "owner") {
     return (
-      <div className="min-h-screen flex flex-col">
-        <Navigation />
-        <main className="flex-1 container py-8">
-          <div className="max-w-4xl mx-auto space-y-8">
+      <div className="min-h-screen flex flex-col w-full">
+        <main className="flex-1 w-full p-4 sm:p-6 lg:p-8">
+          <div className="w-full space-y-8">
             <div className="flex items-center justify-between">
               <div>
                 <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent">
@@ -124,10 +122,9 @@ const UserPortal = () => {
   // Property Manager Dashboard
   if (role === "property_manager") {
     return (
-      <div className="min-h-screen flex flex-col">
-        <Navigation />
-        <main className="flex-1 container py-8">
-          <div className="max-w-6xl mx-auto space-y-8">
+      <div className="min-h-screen flex flex-col w-full">
+        <main className="flex-1 w-full p-4 sm:p-6 lg:p-8">
+          <div className="w-full space-y-8">
             <div className="flex items-center justify-between">
               <div>
                 <div className="flex items-center gap-2">
@@ -235,10 +232,9 @@ const UserPortal = () => {
 
   // Default User Dashboard (for regular users or fallback)
   return (
-    <div className="min-h-screen flex flex-col">
-      <Navigation />
-      <main className="flex-1 container py-8">
-        <div className="max-w-4xl mx-auto space-y-8">
+    <div className="min-h-screen flex flex-col w-full">
+      <main className="flex-1 w-full p-4 sm:p-6 lg:p-8">
+        <div className="w-full space-y-8">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent">

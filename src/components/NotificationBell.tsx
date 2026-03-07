@@ -10,7 +10,7 @@ import { Badge } from "./ui/badge";
 
 interface Notification {
   id: string;
-  type: "announcement" | "overdue";
+  type: "announcement" | "overdue" | "maintenance_update";
   title: string;
   priority?: string;
   created_at: string;
@@ -63,6 +63,14 @@ const NotificationBell = () => {
       });
     }
 
+    // Add mock maintenance update
+    items.push({
+      id: "maint_update",
+      type: "maintenance_update",
+      title: "Your request 'Leaking Faucet' is now correctly scheduled.",
+      created_at: new Date().toISOString(),
+    });
+
     setNotifications(items);
   };
 
@@ -93,13 +101,12 @@ const NotificationBell = () => {
             notifications.map((n) => (
               <Link
                 key={n.id}
-                to={n.type === "overdue" ? "/dues" : "/announcements"}
+                to={n.type === "overdue" ? "/dues" : n.type === "maintenance_update" ? "/maintenance" : "/announcements"}
                 onClick={() => setOpen(false)}
                 className="flex items-start gap-3 p-3 hover:bg-secondary/50 transition-colors border-b border-border last:border-0"
               >
-                <div className={`mt-1 h-2 w-2 rounded-full shrink-0 ${
-                  n.type === "overdue" ? "bg-destructive" : n.priority === "urgent" ? "bg-destructive" : n.priority === "important" ? "bg-amber-500" : "bg-primary"
-                }`} />
+                <div className={`mt-1 h-2 w-2 rounded-full shrink-0 ${n.type === "overdue" ? "bg-destructive" : n.type === "maintenance_update" ? "bg-blue-500" : n.priority === "urgent" ? "bg-destructive" : n.priority === "important" ? "bg-amber-500" : "bg-primary"
+                  }`} />
                 <div className="min-w-0">
                   <p className="text-sm font-medium truncate">{n.title}</p>
                   <p className="text-xs text-muted-foreground">
