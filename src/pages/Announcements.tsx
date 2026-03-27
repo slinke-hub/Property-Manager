@@ -13,7 +13,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Footer from "@/components/Footer";
 import { db } from "@/config/firebase";
-import { collection, query, orderBy, getDocs, addDoc, deleteDoc, doc } from "firebase/firestore";
+import { collection, query, orderBy, addDoc, deleteDoc, doc, onSnapshot } from "firebase/firestore";
 import { toast } from "sonner";
 import { Megaphone, Plus, AlertTriangle, Info, Bell, Trash2 } from "lucide-react";
 
@@ -43,22 +43,19 @@ const Announcements = () => {
     if (!authLoading && !user) navigate("/auth");
   }, [user, authLoading, navigate]);
 
+  // Real-time listener for announcements
   useEffect(() => {
-    if (user) fetchAnnouncements();
-  }, [user]);
-
-  const fetchAnnouncements = async () => {
-    setIsLoading(true);
-    try {
-      const q = query(collection(db, "announcements"), orderBy("created_at", "desc"));
-      const snapshot = await getDocs(q);
+    if (!user) return;
+    const q = query(collection(db, "announcements"), orderBy("created_at", "desc"));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
       setAnnouncements(snapshot.docs.map(d => ({ id: d.id, ...d.data() } as Announcement)));
-    } catch (error) {
-      console.error("Error fetching announcements:", error);
-    } finally {
       setIsLoading(false);
-    }
-  };
+    }, (error) => {
+      console.error("Error listening to announcements:", error);
+      setIsLoading(false);
+    });
+    return () => unsubscribe();
+  }, [user]);
 
   const handleCreate = async () => {
     if (!title.trim() || !content.trim()) {
@@ -78,7 +75,6 @@ const Announcements = () => {
       setContent("");
       setPriority("normal");
       setIsDialogOpen(false);
-      fetchAnnouncements();
     } catch (error) {
       toast.error(t("announcements.createError"));
     }
@@ -88,7 +84,6 @@ const Announcements = () => {
     try {
       await deleteDoc(doc(db, "announcements", id));
       toast.success(t("announcements.deleted"));
-      fetchAnnouncements();
     } catch (error) {
       console.error("Error deleting:", error);
     }

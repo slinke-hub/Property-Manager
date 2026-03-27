@@ -4,7 +4,7 @@ import { Button } from "./ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { useAuth } from "@/hooks/useAuth";
 import { db } from "@/config/firebase";
-import { collection, query, where, getDocs, orderBy, limit } from "firebase/firestore";
+import { collection, query, where, orderBy, limit, onSnapshot } from "firebase/firestore";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Link } from "react-router-dom";
 import { Badge } from "./ui/badge";
@@ -23,71 +23,31 @@ const NotificationBell = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [open, setOpen] = useState(false);
 
+  // Real-time listener for recent announcements
   useEffect(() => {
-    if (user) fetchNotifications();
-  }, [user]);
-
-  const fetchNotifications = async () => {
-    const items: Notification[] = [];
-
-    // Fetch recent announcements (last 7 days)
+    if (!user) return;
     const weekAgo = new Date();
     weekAgo.setDate(weekAgo.getDate() - 7);
-    try {
-      const announcementsQuery = query(
-        collection(db, "announcements"),
-        where("created_at", ">=", weekAgo.toISOString()),
-        orderBy("created_at", "desc"),
-        limit(5)
-      );
-      const announcementsSnapshot = await getDocs(announcementsQuery);
-      announcementsSnapshot.docs.forEach((d) => {
+
+    const q = query(
+      collection(db, "announcements"),
+      where("created_at", ">=", weekAgo.toISOString()),
+      orderBy("created_at", "desc"),
+      limit(5)
+    );
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const items: Notification[] = snapshot.docs.map((d) => {
         const a = d.data();
-        items.push({ id: d.id, type: "announcement", title: a.title, priority: a.priority, created_at: a.created_at });
+        return { id: d.id, type: "announcement" as const, title: a.title, priority: a.priority, created_at: a.created_at };
       });
-
-      // Fetch overdue dues
-      const now = new Date();
-      const currentYear = now.getFullYear();
-      const currentMonth = now.getMonth() + 1;
-
-      const duesQuery = query(
-        collection(db, "monthly_dues"),
-        where("user_id", "==", user!.id),
-        where("status", "==", "pending")
-      );
-      const duesSnapshot = await getDocs(duesQuery);
-
-      const overdueDues = duesSnapshot.docs.filter(d => {
-        const data = d.data();
-        return data.year < currentYear || (data.year === currentYear && data.month < currentMonth);
-      });
-
-      if (overdueDues.length > 0) {
-        items.push({
-          id: "overdue",
-          type: "overdue",
-          title: t("notifications.overdueDues").replace("{count}", String(overdueDues.length)),
-          created_at: new Date().toISOString(),
-        });
-      }
-    } catch (error) {
-      console.error("Error fetching notifications:", error);
-    }
-
-    // Add mock maintenance update
-    items.push({
-      id: "maint_update",
-      type: "maintenance_update",
-      title: "Your request 'Leaking Faucet' is now correctly scheduled.",
-      created_at: new Date().toISOString(),
+      setNotifications(items);
+    }, (error) => {
+      console.error("Error listening to notifications:", error);
     });
 
-    // Sort by created_at desc
-    items.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-
-    setNotifications(items);
-  };
+    return () => unsubscribe();
+  }, [user]);
 
   const count = notifications.length;
 
@@ -116,20 +76,15 @@ const NotificationBell = () => {
             notifications.map((n) => (
               <Link
                 key={n.id}
-                to={n.type === "overdue" ? "/dues" : n.type === "maintenance_update" ? "/maintenance" : "/announcements"}
+                to="/announcements"
                 onClick={() => setOpen(false)}
                 className="flex items-start gap-3 p-3 hover:bg-secondary/50 transition-colors border-b border-border last:border-0"
               >
-                <div className={`mt-1 h-2 w-2 rounded-full shrink-0 ${n.type === "overdue" ? "bg-destructive" : n.type === "maintenance_update" ? "bg-blue-500" : n.priority === "urgent" ? "bg-destructive" : n.priority === "important" ? "bg-amber-500" : "bg-primary"
-                  }`} />
+                <div className={`mt-1 h-2 w-2 rounded-full shrink-0 ${n.priority === "urgent" ? "bg-destructive" : n.priority === "important" ? "bg-amber-500" : "bg-primary"}`} />
                 <div className="min-w-0">
                   <p className="text-sm font-medium truncate">{n.title}</p>
                   <p className="text-xs text-muted-foreground">
-                    {n.type === "overdue" ? (
-                      <Badge variant="destructive" className="text-[10px] px-1.5 py-0">{t("notifications.actionRequired")}</Badge>
-                    ) : (
-                      new Date(n.created_at).toLocaleDateString()
-                    )}
+                    {new Date(n.created_at).toLocaleDateString()}
                   </p>
                 </div>
               </Link>
