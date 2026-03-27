@@ -14,7 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Progress } from "@/components/ui/progress";
 import Footer from "@/components/Footer";
 import { db } from "@/config/firebase";
-import { collection, query, orderBy, getDocs, addDoc, updateDoc, deleteDoc, doc } from "firebase/firestore";
+import { collection, query, orderBy, addDoc, updateDoc, deleteDoc, doc, onSnapshot } from "firebase/firestore";
 import { toast } from "sonner";
 import { Vote, Plus, Trash2, CheckCircle2, Clock } from "lucide-react";
 
@@ -57,23 +57,30 @@ const Polls = () => {
     if (!authLoading && !user) navigate("/auth");
   }, [user, authLoading, navigate]);
 
+  // Real-time listener for polls
   useEffect(() => {
-    if (user) fetchPolls();
+    if (!user) return;
+    const q = query(collection(db, "polls"), orderBy("created_at", "desc"));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      setPolls(snapshot.docs.map(d => ({ id: d.id, ...d.data() } as Poll)));
+      setIsLoading(false);
+    }, (error) => {
+      console.error("Error listening to polls:", error);
+      setIsLoading(false);
+    });
+    return () => unsubscribe();
   }, [user]);
 
-  const fetchPolls = async () => {
-    setIsLoading(true);
-    try {
-      const pSnapshot = await getDocs(query(collection(db, "polls"), orderBy("created_at", "desc")));
-      const vSnapshot = await getDocs(collection(db, "poll_votes"));
-
-      setPolls(pSnapshot.docs.map(d => ({ id: d.id, ...d.data() } as Poll)));
-      setVotes(vSnapshot.docs.map(d => ({ id: d.id, ...d.data() } as PollVote)));
-    } catch (error) {
-      console.error("Error fetching polls:", error);
-    }
-    setIsLoading(false);
-  };
+  // Real-time listener for votes
+  useEffect(() => {
+    if (!user) return;
+    const unsubscribe = onSnapshot(collection(db, "poll_votes"), (snapshot) => {
+      setVotes(snapshot.docs.map(d => ({ id: d.id, ...d.data() } as PollVote)));
+    }, (error) => {
+      console.error("Error listening to votes:", error);
+    });
+    return () => unsubscribe();
+  }, [user]);
 
   const handleCreate = async () => {
     const filteredOptions = newOptions.filter((o) => o.trim());
@@ -97,7 +104,6 @@ const Polls = () => {
       setNewDesc("");
       setNewOptions(["", ""]);
       setIsCreateOpen(false);
-      fetchPolls();
     } catch (error) {
       toast.error(t("polls.createError"));
     }
@@ -118,7 +124,6 @@ const Polls = () => {
         });
       }
       toast.success(t("polls.voteSuccess"));
-      fetchPolls();
     } catch (error) {
       toast.error(t("polls.voteError"));
     }
@@ -128,7 +133,6 @@ const Polls = () => {
     try {
       await deleteDoc(doc(db, "polls", id));
       toast.success(t("polls.deleted"));
-      fetchPolls();
     } catch (e) { }
   };
 
@@ -136,7 +140,6 @@ const Polls = () => {
     try {
       await updateDoc(doc(db, "polls", id), { is_active: false });
       toast.success(t("polls.closed"));
-      fetchPolls();
     } catch (e) { }
   };
 
